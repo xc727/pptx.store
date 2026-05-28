@@ -1,0 +1,1486 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PPTX.STORE | AI PPT 工作台</title>
+  <meta name="description" content="优秀案例展示、PPTX 大纲生成、PPTX 工作台、文献拆分与充值中心。">
+  <style>
+    :root {
+      --bg: #07090d;
+      --ink: #f7f8fb;
+      --muted: rgba(247, 248, 251, 0.66);
+      --dim: rgba(247, 248, 251, 0.42);
+      --line: rgba(255, 255, 255, 0.16);
+      --red: #ff2e45;
+      --cyan: #62e6ff;
+      --green: #b9ff55;
+      --amber: #ffb13d;
+      --panel: rgba(10, 13, 19, 0.72);
+      --nav: 178px;
+    }
+
+    * { box-sizing: border-box; }
+    html { height: 100%; background: var(--bg); }
+    body {
+      min-height: 100%;
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background: #07090d;
+      font-family: "方正仿宋简体", "FZFangSong-Z02", FangSong, "仿宋", "Microsoft YaHei", serif;
+      letter-spacing: 0;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    .backdrop,
+    .grid,
+    .grain,
+    .scan {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .backdrop {
+      z-index: -4;
+      background:
+        linear-gradient(90deg, rgba(7,9,13,.84), rgba(7,9,13,.54) 45%, rgba(7,9,13,.78)),
+        linear-gradient(180deg, rgba(7,9,13,.62), rgba(7,9,13,.78)),
+        url("assets/backgrounds/pgr-hud-bg.png"),
+        radial-gradient(circle at 72% 26%, rgba(255,46,69,0.18), transparent 32%),
+        radial-gradient(circle at 38% 70%, rgba(98,230,255,0.12), transparent 36%),
+        linear-gradient(120deg, #040509, #131722 54%, #07090d);
+      background-size: cover, cover, cover, auto, auto, auto;
+      background-position: center, center, center;
+    }
+
+    .grid {
+      z-index: -3;
+      opacity: .38;
+      background-image:
+        linear-gradient(rgba(255,255,255,.046) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.046) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    }
+
+    .grain {
+      z-index: -2;
+      opacity: .3;
+      background-image: radial-gradient(rgba(255,255,255,.26) .8px, transparent .8px);
+      background-size: 9px 9px;
+    }
+
+    .scan {
+      z-index: 40;
+      opacity: .13;
+      mix-blend-mode: screen;
+      background-image: linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px);
+      background-size: 100% 8px;
+    }
+
+    .shell {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .topline {
+      position: fixed;
+      z-index: 20;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 18px;
+      padding: 0 clamp(20px, 3.6vw, 58px) 0 calc(var(--nav) + 22px);
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(7,9,13,.93), rgba(7,9,13,.18));
+      backdrop-filter: blur(12px);
+    }
+
+    .topline:before,
+    .topline:after {
+      content: "";
+      height: 1px;
+      background: rgba(255,255,255,.34);
+      transform: translateY(0);
+    }
+
+    .event {
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .event.title-enter strong,
+    .event.title-enter span {
+      animation: titleFloatIn .48s cubic-bezier(.2,.78,.18,1) both;
+    }
+
+    .event.title-enter span { animation-delay: .06s; }
+
+    @keyframes titleFloatIn {
+      from {
+        opacity: 0;
+        transform: translateY(-14px) scale(.985);
+        filter: blur(5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    .event strong {
+      display: block;
+      font-family: "方正仿宋简体", "FZFangSong-Z02", FangSong, "仿宋", "Microsoft YaHei", serif;
+      font-size: clamp(28px, 3vw, 48px);
+      line-height: 1;
+      font-weight: 900;
+      text-shadow: 0 0 34px rgba(255,255,255,.2);
+    }
+
+    .event span {
+      position: relative;
+      display: inline-block;
+      margin-top: 7px;
+      color: var(--red);
+      font-size: 12px;
+      letter-spacing: .18em;
+      font-weight: 950;
+    }
+
+    .event span:before,
+    .event span:after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 82px;
+      height: 1px;
+      background: var(--red);
+    }
+    .event span:before { right: calc(100% + 12px); }
+    .event span:after { left: calc(100% + 12px); }
+
+    .page-index {
+      justify-self: end;
+      color: var(--ink);
+      font-size: 12px;
+      letter-spacing: .16em;
+      font-weight: 950;
+      white-space: nowrap;
+      transform: translateY(0);
+    }
+
+    .page-index b { color: var(--red); }
+
+    .corner-paw {
+      position: fixed;
+      z-index: 23;
+      right: 32px;
+      top: 18px;
+      width: 58px;
+      height: 48px;
+      pointer-events: none;
+      opacity: .88;
+      filter: drop-shadow(0 0 18px rgba(255,46,69,.18));
+    }
+
+    .corner-paw span,
+    .corner-paw:before {
+      content: "";
+      position: absolute;
+      background: linear-gradient(145deg, #05070b, #151b24);
+      border: 1px solid rgba(255,255,255,.24);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+
+    .corner-paw:before {
+      left: 17px;
+      bottom: 2px;
+      width: 28px;
+      height: 24px;
+      border-radius: 54% 54% 48% 48%;
+      transform: rotate(-8deg);
+    }
+
+    .corner-paw span {
+      width: 13px;
+      height: 17px;
+      border-radius: 50%;
+    }
+
+    .corner-paw span:nth-child(1) { left: 3px; top: 17px; transform: rotate(-22deg); }
+    .corner-paw span:nth-child(2) { left: 17px; top: 5px; transform: rotate(-8deg); }
+    .corner-paw span:nth-child(3) { right: 17px; top: 5px; transform: rotate(8deg); }
+    .corner-paw span:nth-child(4) { right: 3px; top: 17px; transform: rotate(22deg); }
+
+    .side-nav {
+      position: fixed;
+      z-index: 24;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: var(--nav);
+      padding: 72px 0 92px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      border-right: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(90deg, rgba(7,9,13,.86), rgba(7,9,13,.16));
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      position: absolute;
+      left: 24px;
+      top: 22px;
+      display: grid;
+      gap: 6px;
+      font-weight: 950;
+      letter-spacing: .08em;
+    }
+
+    .side-nav .brand {
+      min-height: 58px;
+      grid-template-columns: 1fr;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      color: #fff;
+      transform: none;
+      background: transparent;
+    }
+
+    .side-nav .brand:before { display: none; }
+
+    .brand small {
+      color: var(--dim);
+      font-size: 10px;
+      letter-spacing: .18em;
+    }
+
+    .menu-button {
+      position: absolute;
+      left: 24px;
+      top: 86px;
+      width: 56px;
+      height: 40px;
+      margin: 0;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .menu-button:before,
+    .menu-button:after,
+    .menu-button i {
+      content: "";
+      position: absolute;
+      left: 0;
+      width: 31px;
+      height: 2px;
+      background: currentColor;
+      transition: width .24s ease, color .24s ease;
+    }
+    .menu-button:before { top: 8px; }
+    .menu-button i { top: 18px; }
+    .menu-button:after { top: 28px; }
+    .menu-button:hover { color: var(--red); }
+    .menu-button:hover:before { width: 44px; }
+    .menu-button:hover:after { width: 18px; }
+
+    .side-nav a {
+      position: relative;
+      display: grid;
+      gap: 5px;
+      min-height: 54px;
+      align-content: center;
+      padding: 0 16px 0 38px;
+      color: rgba(255,255,255,.76);
+      font-size: 14px;
+      transition: transform .22s ease, color .22s ease, background .22s ease;
+    }
+    .side-nav a small {
+      color: var(--dim);
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: .08em;
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: opacity .22s ease, transform .22s ease;
+    }
+    .side-nav a:before {
+      content: "";
+      position: absolute;
+      left: 24px;
+      top: 16px;
+      bottom: 16px;
+      width: 3px;
+      background: var(--red);
+      transform: scaleY(0);
+      transition: transform .22s ease;
+    }
+    .side-nav a:hover,
+    .side-nav a.active {
+      color: #fff;
+      transform: translateX(8px);
+      background: linear-gradient(90deg, rgba(255,46,69,.18), transparent);
+    }
+    .side-nav a:hover small,
+    .side-nav a.active small {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .side-nav a.active:before { transform: scaleY(1); }
+
+    .side-launch {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 22px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .side-launch a {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px 0 12px;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.055);
+      color: rgba(255,255,255,.9);
+      font-size: 13px;
+      font-weight: 900;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+
+    .side-launch a:hover {
+      transform: translateX(6px);
+      border-color: rgba(255,46,69,.72);
+      background: rgba(255,46,69,.16);
+    }
+
+    .side-launch a:after {
+      content: "↗";
+      color: var(--red);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .slides {
+      height: 100vh;
+      transition: transform .82s cubic-bezier(.2,.78,.18,1);
+      will-change: transform;
+    }
+
+    .slide {
+      position: relative;
+      height: 100vh;
+      padding: 78px clamp(24px, 4.5vw, 70px) 42px calc(var(--nav) + clamp(22px, 4vw, 62px));
+      display: grid;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .ghost {
+      position: absolute;
+      left: calc(var(--nav) + 8px);
+      top: 76px;
+      z-index: -1;
+      font-size: clamp(68px, 14vw, 210px);
+      line-height: .8;
+      font-weight: 1000;
+      color: rgba(255,255,255,.045);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .stage {
+      position: relative;
+      min-height: min(520px, calc(100vh - 128px));
+      display: grid;
+      grid-template-columns: minmax(0, .72fr) minmax(500px, 1.12fr);
+      gap: clamp(22px, 3.6vw, 54px);
+      align-items: center;
+      perspective: 1600px;
+    }
+
+    .copy { position: relative; z-index: 4; max-width: 720px; }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .kicker:before {
+      content: "";
+      width: 64px;
+      height: 1px;
+      background: currentColor;
+      box-shadow: 0 0 18px currentColor;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1, h2 {
+      max-width: 820px;
+      font-size: clamp(34px, 4.8vw, 70px);
+      line-height: 1.04;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+    h1 span, h2 span {
+      display: block;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,.74);
+      text-shadow: none;
+    }
+    .lead {
+      max-width: 580px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.72;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .btn {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 20px;
+      border: 1px solid rgba(255,255,255,.34);
+      border-radius: 2px;
+      background: rgba(255,255,255,.055);
+      color: var(--ink);
+      font-weight: 900;
+      font-size: 14px;
+      transition: transform .22s ease, box-shadow .22s ease, color .22s ease, border-color .22s ease, background .22s ease, padding .22s ease;
+    }
+    .btn:hover {
+      transform: translateY(-3px) scale(1.04);
+      padding-left: 28px;
+      padding-right: 28px;
+      border-color: rgba(255,46,69,.86);
+      background: rgba(255,46,69,.18);
+      box-shadow: 0 0 34px rgba(255,46,69,.24);
+    }
+    .btn.primary {
+      border-color: rgba(255,46,69,.9);
+      background: linear-gradient(90deg, rgba(255,46,69,.94), rgba(255,46,69,.42));
+    }
+
+    .showcase {
+      position: relative;
+      min-height: min(470px, calc(100vh - 150px));
+      transform-style: preserve-3d;
+    }
+    .disc {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(36vw, 480px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(255,255,255,.18);
+      opacity: .76;
+      background:
+        radial-gradient(circle at center, transparent 0 25%, rgba(255,255,255,.08) 25.4% 34%, transparent 34.4% 49%, rgba(255,255,255,.1) 49.4% 52%, transparent 52.4%),
+        conic-gradient(from 0deg, rgba(255,255,255,.07), rgba(255,46,69,.17), rgba(98,230,255,.15), rgba(255,255,255,.07));
+      animation: spin 24s linear infinite;
+      transform-origin: center center;
+      transition: filter .28s ease, transform .28s ease, opacity .28s ease;
+    }
+    .disc:before,
+    .disc:after {
+      content: "";
+      position: absolute;
+      inset: 16%;
+      border-radius: 50%;
+      border: 34px solid rgba(255,255,255,.08);
+    }
+    .disc:after {
+      inset: 31%;
+      border-width: 18px;
+      border-color: rgba(255,255,255,.14);
+      border-left-color: transparent;
+    }
+    .showcase:hover .disc {
+      opacity: 1;
+      filter: brightness(1.22) drop-shadow(0 0 36px rgba(98,230,255,.2));
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+    @keyframes spin { to { rotate: 360deg; } }
+
+    .case-window {
+      position: absolute;
+      inset: 8px -8% 54px -8%;
+      overflow: hidden;
+      clip-path: polygon(12% 0, 100% 0, 88% 100%, 0 100%);
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.04);
+      box-shadow: 0 34px 120px rgba(0,0,0,.46);
+      transition: clip-path .32s ease, filter .32s ease, transform .32s ease;
+    }
+    .showcase:hover .case-window {
+      clip-path: polygon(12% 0, 100% 0, 88% 100%, 0 100%);
+      filter: brightness(1.08) saturate(1.12);
+      transform: scale(1.035);
+    }
+    .case-track {
+      height: 100%;
+      display: flex;
+      width: max-content;
+      align-items: center;
+      animation: slideCases 56s linear infinite;
+    }
+    .case-window:hover .case-track { animation-play-state: paused; }
+    .case-card {
+      width: clamp(280px, 28vw, 430px);
+      height: 78%;
+      flex: 0 0 auto;
+      padding: 14px;
+      display: grid;
+      align-items: center;
+      position: relative;
+    }
+    .case-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 24px 58px rgba(0,0,0,.42);
+      background: rgba(255,255,255,.06);
+      transition: transform .28s ease, filter .28s ease, box-shadow .28s ease;
+    }
+    .case-card:hover img {
+      transform: scale(1.055);
+      filter: brightness(1.12);
+      box-shadow: 0 34px 78px rgba(255,46,69,.2);
+    }
+    .case-card b {
+      position: absolute;
+      left: 32px;
+      bottom: 28px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255,255,255,.24);
+      background: rgba(0,0,0,.56);
+      font-size: 13px;
+      backdrop-filter: blur(10px);
+    }
+    @keyframes slideCases {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    .pulse {
+      position: absolute;
+      z-index: 3;
+      left: -4%;
+      right: -4%;
+      top: 55%;
+      height: 44px;
+      opacity: .54;
+      background:
+        linear-gradient(90deg, transparent, rgba(255,255,255,.32), transparent),
+        repeating-linear-gradient(90deg, transparent 0 22px, rgba(255,255,255,.3) 22px 24px);
+      mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent);
+    }
+
+    .status-card {
+      position: absolute;
+      z-index: 5;
+      right: 3%;
+      bottom: 8px;
+      width: min(24vw, 300px);
+      min-width: 220px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(7,9,13,.68);
+      box-shadow: 0 34px 120px rgba(0,0,0,.46);
+      backdrop-filter: blur(14px);
+      transition: transform .28s ease, border-color .28s ease, background .28s ease;
+    }
+    .showcase:hover .status-card {
+      transform: translateX(-18px) translateY(-8px) scale(1.05);
+      border-color: rgba(98,230,255,.62);
+      background: rgba(7,9,13,.84);
+    }
+    .status-card b {
+      display: block;
+      font-size: 32px;
+      line-height: 1;
+    }
+    .status-card span {
+      display: block;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 34px;
+      max-width: 860px;
+    }
+    .tile {
+      min-height: 112px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.055);
+      transition: transform .22s ease, border-color .22s ease, background .22s ease;
+    }
+    .tile:hover {
+      transform: translateY(-8px) scale(1.03);
+      border-color: rgba(255,46,69,.7);
+      background: rgba(255,46,69,.13);
+    }
+    .tile code {
+      color: var(--red);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-weight: 950;
+      font-size: 12px;
+    }
+    .tile h3 {
+      margin-top: 14px;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+    .tile p {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .panel-visual {
+      min-height: min(430px, calc(100vh - 156px));
+      position: relative;
+      display: grid;
+      place-items: center;
+      transform-style: preserve-3d;
+    }
+
+    #cases .stage {
+      grid-template-columns: minmax(300px, .52fr) minmax(620px, 1.48fr);
+    }
+
+    #outline .stage {
+      grid-template-columns: minmax(520px, 1fr) minmax(390px, .78fr);
+    }
+
+    #outline .copy {
+      order: 2;
+      justify-self: end;
+      align-self: center;
+      padding: 22px 24px;
+      border-left: 1px solid rgba(255,255,255,.16);
+      background: linear-gradient(90deg, rgba(255,255,255,.035), transparent);
+    }
+
+    #outline .panel-visual {
+      order: 1;
+    }
+
+    #outline .copy h2 {
+      font-size: clamp(32px, 3.8vw, 58px);
+      line-height: 1.08;
+      max-width: 520px;
+    }
+
+    #outline .lead {
+      max-width: 470px;
+    }
+
+    #workbench .ghost {
+      top: 74px;
+      font-size: clamp(78px, 15vw, 220px);
+    }
+
+    #workbench .copy h2 {
+      font-size: clamp(42px, 5.2vw, 86px);
+      line-height: 1;
+      writing-mode: horizontal-tb;
+      max-width: 540px;
+    }
+
+    #workbench .copy {
+      min-height: auto;
+      display: grid;
+      align-content: center;
+    }
+
+    #workbench .lead,
+    #workbench .actions {
+      margin-left: 0;
+      max-width: 500px;
+    }
+
+    #workbench .case-window {
+      inset: 18px -2% 18px -10%;
+      clip-path: polygon(24% 0, 100% 0, 78% 100%, 0 100%);
+    }
+
+    #book .panel-visual .card {
+      clip-path: polygon(0 0, 90% 0, 100% 100%, 10% 100%);
+    }
+
+    #book .stage {
+      grid-template-columns: minmax(340px, .72fr) minmax(560px, 1.28fr);
+    }
+
+    #book .panel-visual {
+      justify-items: stretch;
+    }
+
+    #book .panel-visual .card {
+      width: min(54vw, 760px);
+      min-height: min(390px, calc(100vh - 180px));
+      justify-self: stretch;
+      background:
+        linear-gradient(90deg, rgba(185,255,85,.09), rgba(255,255,255,.035)),
+        rgba(7,9,13,.52);
+    }
+
+    #recharge .tiles {
+      grid-template-columns: repeat(3, minmax(130px, 1fr));
+      max-width: 700px;
+    }
+    .panel-visual .card {
+      width: min(42vw, 540px);
+      min-height: 320px;
+      padding: 22px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.03));
+      clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+      box-shadow: 0 34px 120px rgba(0,0,0,.42);
+      transition: transform .3s ease, filter .3s ease;
+    }
+    .panel-visual:hover .card {
+      transform: scale(1.06) rotate(-1deg);
+      filter: brightness(1.12);
+    }
+
+    .news-board {
+      width: min(48vw, 650px);
+      min-height: min(390px, calc(100vh - 178px));
+      display: grid;
+      grid-template-columns: minmax(220px, .92fr) minmax(260px, 1fr);
+      gap: 18px;
+      align-items: center;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.045);
+      box-shadow: 0 34px 120px rgba(0,0,0,.42);
+      transition: transform .3s ease, filter .3s ease;
+    }
+
+    .panel-visual:hover .news-board {
+      transform: scale(1.035);
+      filter: brightness(1.08);
+    }
+
+    .news-image {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,.18);
+      clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%);
+    }
+
+    .news-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .news-row {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr) 54px;
+      gap: 10px;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 12px;
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.82);
+      font-size: 12px;
+      transition: transform .2s ease, background .2s ease;
+    }
+
+    .news-row:hover {
+      transform: translateX(10px);
+      background: rgba(98,230,255,.15);
+    }
+
+    .news-row b { color: var(--cyan); }
+    .news-row time { color: var(--dim); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; }
+    .card-row {
+      display: grid;
+      grid-template-columns: 88px minmax(0,1fr);
+      gap: 14px;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+    }
+    .card-row b {
+      color: var(--cyan);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .card-row span {
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: 14px;
+    }
+
+    /* Page-specific tightening */
+    .slide:not(#book) .disc { display: none; }
+    #book .disc {
+      display: block;
+      position: absolute;
+      right: 2vw;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    #outline .stage {
+      grid-template-columns: minmax(430px, .8fr) minmax(430px, .86fr);
+      gap: clamp(18px, 2.4vw, 34px);
+    }
+    #outline .panel-visual { justify-content: start; }
+    #outline .news-board {
+      width: min(38vw, 560px);
+      grid-template-columns: minmax(170px, .72fr) minmax(220px, 1fr);
+      gap: 12px;
+    }
+    #outline .copy {
+      max-width: 620px;
+      justify-self: start;
+      padding-left: 18px;
+    }
+    #workbench .status-card {
+      right: 8%;
+      bottom: -6px;
+      width: min(38vw, 520px);
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+    #workbench .status-card b { display: none; }
+    #workbench .status-card span {
+      margin: 0;
+      color: rgba(247,248,251,.72);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    #workbench .showcase:hover .status-card {
+      transform: none;
+      border-color: transparent;
+      background: transparent;
+    }
+    #book .panel-visual .card,
+    #book .panel-visual:hover .card {
+      clip-path: none;
+      transform: none;
+    }
+
+    .bottom-hud {
+      position: fixed;
+      z-index: 22;
+      left: calc(var(--nav) + 28px);
+      right: 28px;
+      bottom: 14px;
+      height: 28px;
+      display: grid;
+      grid-template-columns: auto minmax(160px, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+      color: #fff;
+      pointer-events: none;
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .06em;
+    }
+    .bottom-hud:before,
+    .bottom-hud:after {
+      content: "";
+      height: 1px;
+      background: rgba(255,255,255,.34);
+    }
+
+    .dots {
+      position: fixed;
+      z-index: 24;
+      right: 26px;
+      top: 50%;
+      display: grid;
+      gap: 10px;
+      transform: translateY(-50%);
+    }
+    .dots button {
+      width: 9px;
+      height: 9px;
+      border: 1px solid rgba(255,255,255,.66);
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+    .dots button.active {
+      transform: scale(1.7);
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    .mobile-nav-toggle {
+      display: none;
+    }
+
+    .slide[data-theme="cyan"] .kicker,
+    .slide[data-theme="cyan"] .tile code { color: var(--cyan); }
+    .slide[data-theme="green"] .kicker,
+    .slide[data-theme="green"] .tile code { color: var(--green); }
+    .slide[data-theme="amber"] .kicker,
+    .slide[data-theme="amber"] .tile code { color: var(--amber); }
+
+    @media (max-height: 900px) and (min-width: 981px) {
+      .topline { height: 64px; }
+      .event strong { font-size: clamp(24px, 2.6vw, 40px); }
+      .event span { margin-top: 4px; font-size: 10px; }
+      .side-nav { padding-top: 58px; padding-bottom: 78px; }
+      .brand { top: 16px; }
+      .menu-button { height: 30px; margin-bottom: 12px; }
+      .side-nav a { min-height: 46px; font-size: 13px; }
+      .side-launch { bottom: 14px; gap: 6px; }
+      .side-launch a { min-height: 32px; font-size: 12px; }
+      .slide { padding-top: 68px; padding-bottom: 24px; }
+      .stage { min-height: calc(100vh - 104px); }
+      .ghost { top: 60px; font-size: clamp(58px, 12vw, 176px); }
+      h1, h2 { font-size: clamp(30px, 4vw, 58px); }
+      .lead { margin-top: 14px; font-size: 14px; line-height: 1.62; }
+      .actions { margin-top: 18px; }
+      .btn { min-height: 42px; }
+      .showcase { min-height: calc(100vh - 130px); }
+      .case-window { inset: 4px -7% 42px -7%; }
+      .case-card { width: clamp(250px, 25vw, 360px); height: 76%; }
+      .status-card { bottom: 4px; padding: 12px; }
+      .status-card b { font-size: 24px; }
+      .panel-visual { min-height: calc(100vh - 138px); }
+      .news-board { min-height: calc(100vh - 170px); padding: 14px; }
+      .news-row { min-height: 34px; }
+      .tiles { margin-top: 20px; gap: 10px; }
+      .tile { min-height: 96px; padding: 12px; }
+      .tile h3 { font-size: 16px; margin-top: 10px; }
+      .tile p { font-size: 12px; line-height: 1.48; }
+      .bottom-hud { display: none; }
+      #outline .copy { padding: 16px 18px; }
+      #outline .copy h2 { font-size: clamp(30px, 3.4vw, 48px); }
+      #workbench .copy h2 { font-size: clamp(34px, 4vw, 62px); }
+      #book .panel-visual .card { min-height: calc(100vh - 190px); }
+    }
+
+    @media (max-width: 980px) {
+      body { overflow: auto; }
+      .shell { height: auto; min-height: 100vh; overflow: visible; }
+      .slides { height: auto; transform: none !important; }
+      .slide {
+        min-height: 100vh;
+        height: auto;
+        padding: 100px 18px 84px;
+      }
+      .topline {
+        height: 72px;
+        grid-template-columns: 1fr;
+        align-items: center;
+        padding: 0 18px;
+      }
+      .topline:before,
+      .topline:after,
+      .page-index,
+      .bottom-hud,
+      .dots { display: none; }
+      .corner-paw {
+        right: 14px;
+        top: 14px;
+        width: 44px;
+        height: 38px;
+        opacity: .72;
+      }
+      .corner-paw:before {
+        left: 13px;
+        width: 22px;
+        height: 19px;
+      }
+      .corner-paw span {
+        width: 10px;
+        height: 13px;
+      }
+      .corner-paw span:nth-child(1) { left: 2px; top: 14px; }
+      .corner-paw span:nth-child(2) { left: 13px; top: 4px; }
+      .corner-paw span:nth-child(3) { right: 13px; top: 4px; }
+      .corner-paw span:nth-child(4) { right: 2px; top: 14px; }
+      .event { text-align: left; }
+      .event strong { font-size: 24px; }
+      .event span { display: none; }
+      .mobile-nav-toggle {
+        position: fixed;
+        z-index: 60;
+        left: 14px;
+        top: 14px;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: 1px solid rgba(255,255,255,.22);
+        background: rgba(7,9,13,.82);
+        backdrop-filter: blur(14px);
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .mobile-nav-toggle span {
+        width: 2px;
+        height: 28px;
+        background: currentColor;
+        transition: width .24s ease, height .24s ease, transform .24s ease, background .24s ease;
+      }
+      body.nav-open .mobile-nav-toggle {
+        flex-direction: column;
+        gap: 6px;
+        color: var(--red);
+      }
+      body.nav-open .mobile-nav-toggle span {
+        width: 28px;
+        height: 2px;
+      }
+      .side-nav {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: min(78vw, 320px);
+        height: 100vh;
+        padding: 86px 0 26px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        overflow: hidden auto;
+        border-top: 0;
+        border-right: 1px solid rgba(255,255,255,.12);
+        background: rgba(7,9,13,.94);
+        transform: translateX(-105%);
+        transition: transform .32s cubic-bezier(.2,.78,.18,1), box-shadow .32s ease;
+      }
+      body.nav-open .side-nav {
+        transform: translateX(0);
+        box-shadow: 28px 0 90px rgba(0,0,0,.48);
+      }
+      .brand {
+        display: grid;
+        left: 78px;
+        top: 20px;
+      }
+      .menu-button { display: none; }
+      .side-launch {
+        position: static;
+        display: grid;
+        margin: auto 18px 0;
+      }
+      .side-nav a {
+        min-width: 0;
+        min-height: 58px;
+        padding: 0 18px 0 36px;
+        text-align: left;
+        place-content: center start;
+      }
+      .side-nav a:before {
+        left: 18px;
+        right: auto;
+        top: 16px;
+        bottom: 16px;
+        width: 3px;
+        height: auto;
+        transform: scaleY(0);
+      }
+      .side-nav a.active:before { transform: scaleY(1); }
+      .side-nav a:hover,
+      .side-nav a.active { transform: none; }
+      .ghost { left: 10px; font-size: 80px; }
+      .stage {
+        min-height: auto;
+        grid-template-columns: 1fr;
+        gap: 34px;
+      }
+      .showcase {
+        min-height: 430px;
+        order: -1;
+      }
+      .disc { width: min(84vw, 420px); }
+      .case-window {
+        inset: 34px 0;
+        clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+      }
+      .case-card { width: 86vw; padding: 16px; }
+      .status-card { display: none; }
+      .tiles { grid-template-columns: 1fr; }
+      h1, h2 { font-size: clamp(40px, 13vw, 72px); }
+      .panel-visual .card { width: 100%; clip-path: none; }
+      .news-board {
+        width: 100%;
+        grid-template-columns: 1fr;
+      }
+      #workbench .copy h2 {
+        writing-mode: horizontal-tb;
+        font-size: clamp(40px, 13vw, 72px);
+        max-height: none;
+      }
+      #workbench .copy { min-height: auto; }
+      #workbench .lead,
+      #workbench .actions {
+        margin-left: 0;
+        max-width: 580px;
+      }
+      #book .stage { grid-template-columns: 1fr; }
+      #book .panel-visual .card { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *:before, *:after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true"></div>
+  <div class="grid" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="scan" aria-hidden="true"></div>
+
+  <div class="shell">
+    <header class="topline">
+      <div></div>
+      <div class="event" aria-label="当前栏目">
+        <strong id="eventTitle">优秀案例展示</strong>
+        <span id="eventSub">CASE SHOWCASE</span>
+      </div>
+      <div class="page-index">PAGE - <b id="pageNow">01</b> / <span id="pageTotal">05</span></div>
+    </header>
+
+    <div class="corner-paw" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+    <button class="mobile-nav-toggle" type="button" aria-label="打开导航" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="side-nav" aria-label="首页导航">
+      <a class="brand" href="#cases"><span>PPTX.STORE</span><small>AI PRESENTATION</small></a>
+      <button class="menu-button" type="button" aria-label="菜单"><i></i></button>
+      <a class="active" href="#cases" data-slide="0"><span>优秀案例展示</span><small>SHOWCASE</small></a>
+      <a href="#outline" data-slide="1"><span>PPTX 大纲生成</span><small>OUTLINE</small></a>
+      <a href="#workbench" data-slide="2"><span>PPTX 工作台</span><small>WORKBENCH</small></a>
+      <a href="#book" data-slide="3"><span>文献拆分</span><small>BOOK SPLIT</small></a>
+      <a href="#recharge" data-slide="4"><span>充值中心</span><small>BILLING</small></a>
+      <div class="side-launch" aria-label="功能入口">
+        <a href="https://app.pptx.store/">启动工作台</a>
+        <a href="https://app.pptx.store/book-split">文献拆分</a>
+      </div>
+    </nav>
+
+    <main class="slides" id="slides">
+      <section class="slide" id="cases" data-title="优秀案例展示" data-sub="CASE SHOWCASE" data-theme="red">
+        <div class="ghost">CASES</div>
+        <div class="stage">
+          <div class="copy">
+            <div class="kicker">EVENT 01 / SHOWCASE</div>
+            <h1>优秀案例展示<span>缓慢滑过。</span></h1>
+            <p class="lead">展示区一次能看到两到三张案例图，鼠标悬停会暂停并放大提亮。右键图片可以直接下载。</p>
+            <div class="actions">
+              <a class="btn primary" href="https://app.pptx.store/">进入工作台</a>
+              <a class="btn" href="#outline" data-slide="1">生成大纲</a>
+            </div>
+          </div>
+          <div class="showcase">
+            <div class="disc"></div>
+            <div class="case-window">
+              <div class="case-track">
+                <figure class="case-card"><img src="assets/cases/case-01.png" alt="PPT 案例 1"><b>CASE 01</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-02.png" alt="PPT 案例 2"><b>CASE 02</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-03.png" alt="PPT 案例 3"><b>CASE 03</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-04.png" alt="PPT 案例 4"><b>CASE 04</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-05.png" alt="PPT 案例 5"><b>CASE 05</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-01.png" alt="PPT 案例 1"><b>CASE 01</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-02.png" alt="PPT 案例 2"><b>CASE 02</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-03.png" alt="PPT 案例 3"><b>CASE 03</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-04.png" alt="PPT 案例 4"><b>CASE 04</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-05.png" alt="PPT 案例 5"><b>CASE 05</b></figure>
+              </div>
+            </div>
+            <div class="pulse"></div>
+            <div class="status-card"><b>5 CASES</b><span>支持继续替换为你从 PowerPoint 导出的图标、封面、人物或线条装饰。</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="outline" data-title="PPTX 大纲生成" data-sub="OUTLINE GENERATOR" data-theme="cyan">
+        <div class="ghost">OUTLINE</div>
+        <div class="stage">
+          <div class="copy">
+            <div class="kicker">EVENT 02 / OUTLINE</div>
+            <h2>先把材料，<span>整理成页级大纲。</span></h2>
+            <p class="lead">上传原稿、粘贴文案或补充要求，进入工作台后可生成并预览 PPT 大纲，再决定是否继续生成完整 PPTX。</p>
+            <div class="actions">
+              <a class="btn primary" href="https://app.pptx.store/#outline">进入大纲生成</a>
+              <a class="btn" href="https://app.pptx.store/">打开工作台</a>
+            </div>
+            <div class="tiles">
+              <article class="tile"><code>STEP C</code><h3>大纲生成</h3><p>按页生成标题、正文、图示说明和版式需求。</p></article>
+              <article class="tile"><code>PREVIEW</code><h3>在线预览</h3><p>生成后可在 Studio 中检查并修改。</p></article>
+              <article class="tile"><code>EDIT</code><h3>继续调整</h3><p>大纲可以作为后续 PPTX 生成的核心输入。</p></article>
+            </div>
+          </div>
+          <div class="panel-visual" data-tilt>
+            <div class="disc"></div>
+            <div class="news-board">
+              <img class="news-image" src="assets/cases/case-03.png" alt="大纲生成示意案例">
+              <div class="news-list">
+                <div class="news-row"><b>01</b><span>原稿解析</span><time>READY</time></div>
+                <div class="news-row"><b>02</b><span>章节结构</span><time>BUILD</time></div>
+                <div class="news-row"><b>03</b><span>页级大纲</span><time>EDIT</time></div>
+                <div class="news-row"><b>04</b><span>配图指令</span><time>STYLE</time></div>
+                <div class="news-row"><b>05</b><span>预览确认</span><time>NEXT</time></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="workbench" data-title="PPTX 工作台" data-sub="WORKBENCH" data-theme="red">
+        <div class="ghost">PPTX</div>
+        <div class="stage">
+          <div class="copy">
+            <div class="kicker">EVENT 03 / WORKBENCH</div>
+            <h2>从上传到交付，<span>放在一个工作台。</span></h2>
+            <p class="lead">工作台负责上传原稿和模板、配置页数、查看日志、预览 PDF、下载 PPTX，以及后续重生成和编辑流程。</p>
+            <div class="actions">
+              <a class="btn primary" href="https://app.pptx.store/">启动 PPTX 工作台</a>
+              <a class="btn" href="#book" data-slide="3">查看文献拆分</a>
+            </div>
+          </div>
+          <div class="showcase">
+            <div class="disc"></div>
+            <div class="case-window">
+              <div class="case-track">
+                <figure class="case-card"><img src="assets/cases/case-04.png" alt="PPT 案例 4"><b>STYLE</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-02.png" alt="PPT 案例 2"><b>TEMPLATE</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-01.png" alt="PPT 案例 1"><b>EXPORT</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-04.png" alt="PPT 案例 4"><b>STYLE</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-02.png" alt="PPT 案例 2"><b>TEMPLATE</b></figure>
+                <figure class="case-card"><img src="assets/cases/case-01.png" alt="PPT 案例 1"><b>EXPORT</b></figure>
+              </div>
+            </div>
+            <div class="pulse"></div>
+            <div class="status-card"><b>PPTX</b><span>PDF 预览与 PPTX 文件交付，保留可编辑输出。</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="book" data-title="文献拆分" data-sub="BOOK SPLIT" data-theme="green">
+        <div class="ghost">BOOK</div>
+        <div class="stage">
+          <div class="copy">
+            <div class="kicker">EVENT 04 / BOOK SPLIT</div>
+            <h2>文献拆分，<span>独立工具。</span></h2>
+            <p class="lead">拆书与 PPT 生产不绑定。它用于长文档、书籍、论文的章节拆分和知识归档，输出 Excel、Word、Markdown 等结果。</p>
+            <div class="actions">
+              <a class="btn primary" href="https://app.pptx.store/book-split">进入文献拆分</a>
+              <a class="btn" href="#recharge" data-slide="4">查看充值中心</a>
+            </div>
+          </div>
+          <div class="panel-visual" data-tilt>
+            <div class="disc"></div>
+            <div class="card">
+              <div class="card-row"><b>PDF</b><span>书籍、论文、报告、长篇资料。</span></div>
+              <div class="card-row"><b>DOCX</b><span>支持常见文档与 Markdown 输入。</span></div>
+              <div class="card-row"><b>CHUNK</b><span>章节切分、长段落拆解、知识层归档。</span></div>
+              <div class="card-row"><b>EXPORT</b><span>输出 Excel、Word、Markdown，独立保存。</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="recharge" data-title="充值中心" data-sub="BILLING CENTER" data-theme="amber">
+        <div class="ghost">BILLING</div>
+        <div class="stage">
+          <div class="copy">
+            <div class="kicker">EVENT 05 / BILLING</div>
+            <h2>额度清晰，<span>生成前先确认。</span></h2>
+            <p class="lead">进入工作台后可查看当前余额，并通过充值中心补充页数额度。首页这里作为入口，真正付款确认仍在工作台完成。</p>
+            <div class="actions">
+              <a class="btn primary" href="https://app.pptx.store/#recharge">进入充值中心</a>
+              <a class="btn" href="https://app.pptx.store/">返回工作台</a>
+            </div>
+            <div class="tiles">
+              <article class="tile"><code>¥5</code><h3>5 页额度</h3><p>适合小型测试和单次页面生成。</p></article>
+              <article class="tile"><code>¥20</code><h3>20 页额度</h3><p>适合完整汇报、答辩和课程项目。</p></article>
+              <article class="tile"><code>¥50</code><h3>50 页额度</h3><p>适合批量项目和多次迭代。</p></article>
+            </div>
+          </div>
+          <div class="panel-visual" data-tilt>
+            <div class="disc"></div>
+            <div class="card">
+              <div class="card-row"><b>BALANCE</b><span>账户页数额度实时显示。</span></div>
+              <div class="card-row"><b>ORDER</b><span>提交充值订单，等待确认到账。</span></div>
+              <div class="card-row"><b>RUN</b><span>余额充足后启动生成任务。</span></div>
+              <div class="card-row"><b>HISTORY</b><span>历史项目可回看、预览和下载。</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="dots" id="dots" aria-label="页面切换"></div>
+    <div class="bottom-hud"><span>PPTX.STORE</span><span></span><span id="hudText">CASE SHOWCASE</span></div>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const slideWrap = document.getElementById("slides");
+    const navLinks = Array.from(document.querySelectorAll("[data-slide]"));
+    const dots = document.getElementById("dots");
+    const pageNow = document.getElementById("pageNow");
+    const pageTotal = document.getElementById("pageTotal");
+    const eventTitle = document.getElementById("eventTitle");
+    const eventSub = document.getElementById("eventSub");
+    const eventShell = document.querySelector(".event");
+    const hudText = document.getElementById("hudText");
+    const mobileNavToggle = document.querySelector(".mobile-nav-toggle");
+    let current = 0;
+    let locked = false;
+
+    function setMobileNav(open) {
+      document.body.classList.toggle("nav-open", open);
+      if (mobileNavToggle) {
+        mobileNavToggle.setAttribute("aria-expanded", open ? "true" : "false");
+        mobileNavToggle.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
+      }
+    }
+
+    mobileNavToggle?.addEventListener("click", () => {
+      setMobileNav(!document.body.classList.contains("nav-open"));
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!document.body.classList.contains("nav-open")) return;
+      if (event.target.closest(".side-nav") || event.target.closest(".mobile-nav-toggle")) return;
+      setMobileNav(false);
+    });
+
+    function pad(num) {
+      return String(num + 1).padStart(2, "0");
+    }
+
+    function goTo(index, pushHash = true) {
+      const next = Math.max(0, Math.min(slides.length - 1, index));
+      current = next;
+      slideWrap.style.transform = `translateY(-${next * 100}vh)`;
+      navLinks.forEach((link) => link.classList.toggle("active", Number(link.dataset.slide) === next));
+      Array.from(dots.children).forEach((dot, i) => dot.classList.toggle("active", i === next));
+      pageNow.textContent = pad(next);
+      eventTitle.textContent = slides[next].dataset.title || "";
+      eventSub.textContent = slides[next].dataset.sub || "";
+      if (eventShell) {
+        eventShell.classList.remove("title-enter");
+        void eventShell.offsetWidth;
+        eventShell.classList.add("title-enter");
+      }
+      hudText.textContent = slides[next].dataset.sub || "PPTX.STORE";
+      if (pushHash) history.replaceState(null, "", `#${slides[next].id}`);
+    }
+
+    function createDots() {
+      pageTotal.textContent = String(slides.length).padStart(2, "0");
+      slides.forEach((_, index) => {
+        const dot = document.createElement("button");
+        dot.type = "button";
+        dot.setAttribute("aria-label", `切换到第 ${index + 1} 页`);
+        dot.addEventListener("click", () => goTo(index));
+        dots.appendChild(dot);
+      });
+    }
+
+    navLinks.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const index = Number(link.dataset.slide);
+        if (Number.isNaN(index)) return;
+        event.preventDefault();
+        if (window.matchMedia("(max-width: 980px)").matches) {
+          slides[index].scrollIntoView({ behavior: "smooth", block: "start" });
+          history.replaceState(null, "", `#${slides[index].id}`);
+          setMobileNav(false);
+          return;
+        }
+        goTo(index);
+      });
+    });
+
+    window.addEventListener("wheel", (event) => {
+      if (window.matchMedia("(max-width: 980px)").matches) return;
+      event.preventDefault();
+      if (locked) return;
+      locked = true;
+      goTo(current + (event.deltaY > 0 ? 1 : -1));
+      setTimeout(() => { locked = false; }, 760);
+    }, { passive: false });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown" || event.key === "PageDown") goTo(current + 1);
+      if (event.key === "ArrowUp" || event.key === "PageUp") goTo(current - 1);
+    });
+
+    document.querySelectorAll("[data-tilt]").forEach((panel) => {
+      panel.addEventListener("pointermove", (event) => {
+        const rect = panel.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        const y = (event.clientY - rect.top) / rect.height - 0.5;
+        panel.style.transform = `rotateY(${x * 8}deg) rotateX(${-y * 7}deg)`;
+      });
+      panel.addEventListener("pointerleave", () => {
+        panel.style.transform = "";
+      });
+    });
+
+    createDots();
+    const initialIndex = slides.findIndex((slide) => `#${slide.id}` === location.hash);
+    goTo(initialIndex >= 0 ? initialIndex : 0, false);
+  </script>
+</body>
+</html>
