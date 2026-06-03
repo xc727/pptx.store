@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPTX.STORE | 首页</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Google Fonts: Noto Serif SC for headings, Noto Sans SC for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600;900&display=swap" rel="stylesheet">
+
+    <style>
+
+        /* === Global Variables & Reset === */
+        :root {
+            --bg-color: #f4f3ec;
+            --primary-green: #67b75b;
+            --primary-green-hover: #55994b;
+            --text-dark: #222222;
+            --text-light: #a0a0a0;
+            --spring-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        h1, h2, h3, .logo { font-family: "Noto Serif SC", serif; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            font-family: "Noto Sans SC", sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* === Loading Screen === */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .progress-bar-container { width: 200px; height: 4px; background-color: #ddd; border-radius: 2px; overflow: hidden; margin-top: 20px; }
+        .progress-bar { width: 0%; height: 100%; background-color: var(--primary-green); }
+
+        /* === Global Navigation === */
+        header.global-nav {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(244, 243, 236, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .global-nav .logo { font-size: 24px; font-weight: bold; letter-spacing: 2px; color: var(--primary-green); text-decoration: none;}
+        .global-nav .nav-links { display: flex; gap: 30px; align-items: center; }
+        .global-nav .nav-links a { text-decoration: none; color: var(--text-dark); font-weight: 500; font-size: 15px; position: relative; transition: color 0.3s ease; }
+        .global-nav .nav-links a:hover { color: var(--primary-green); }
+        
+        /* Padding to prevent content from hiding under fixed header */
+        .content-wrap { padding-top: 80px; min-height: calc(100vh - 300px); }
+
+        /* === Wave Footer === */
+        .wave-footer-container { position: relative; width: 100%; height: 300px; background: var(--bg-color); margin-top: 60px; overflow: hidden; }
+        .waves { position: absolute; bottom: 0; width: 100%; height: 100%; min-height: 100px; max-height: 150px; }
+        .parallax > use { animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite; }
+        .parallax > use:nth-child(1) { animation-delay: -2s; animation-duration: 7s; }
+        .parallax > use:nth-child(2) { animation-delay: -3s; animation-duration: 10s; }
+        .parallax > use:nth-child(3) { animation-delay: -4s; animation-duration: 13s; }
+        .parallax > use:nth-child(4) { animation-delay: -5s; animation-duration: 20s; }
+        @keyframes move-forever { 0% { transform: translate3d(-90px,0,0); } 100% { transform: translate3d(85px,0,0); } }
+        
+        .footer-content { background-color: var(--primary-green); padding: 40px; text-align: center; color: #fff; }
+        .hand-drawn-icon { width: 120px; height: 120px; margin: 0 auto -60px auto; position: relative; z-index: 10; }
+
+         50% { border-radius: 40% 60% 40% 50% / 60% 40% 50% 40%; } 100% { border-radius: 60% 50% 50% 60% / 50% 60% 60% 40%; } }
+        .sticky-section { display: flex; padding: 100px 5vw; min-height: 200vh; position: relative; }
+        .sticky-left { width: 40%; position: sticky; top: 30vh; height: fit-content; }
+        .sticky-left h2 { font-size: 2.5rem; margin-bottom: 20px; line-height: 1.4; }
+        .scroll-text { color: var(--text-light); font-size: 1.1rem; line-height: 2; margin-bottom: 15px; transition: color 0.6s ease; font-weight: bold; }
+        .scroll-text.active { color: var(--text-dark); }
+        .scroll-right { width: 60%; display: flex; flex-direction: column; gap: 150px; padding-top: 10vh; }
+        .reveal-container { position: relative; width: 100%; border-radius: 20px; overflow: hidden; clip-path: inset(100% 0 0 0); }
+        .reveal-container img { width: 100%; display: block; border-radius: 20px; transform: translateY(20%); transform-origin: center center; }
+    
+        .hero { position: relative; height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; background: radial-gradient(circle at center, #ffffff 0%, var(--bg-color) 100%); }
+        .hero-title { text-align: center; z-index: 10; position: relative; }
+        .hero-title h1 { font-size: clamp(4rem, 8vw, 6rem); font-weight: 900; letter-spacing: 4px; line-height: 1.1; margin-bottom: 20px; color: var(--text-dark); text-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .hero-title p { font-size: 1.4rem; color: #666; letter-spacing: 3px; font-family: "Noto Sans SC", sans-serif; }
+        .hero-images { position: absolute; width: 100%; height: 100%; top: 0; left: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+        .organic-shape { position: absolute; border-radius: 50% 40% 60% 40% / 40% 50% 40% 60%; overflow: hidden; box-shadow: 0 30px 60px rgba(103,183,91,0.15); pointer-events: auto; cursor: pointer; transition: transform 0.6s var(--spring-easing), filter 0.4s ease; animation: breathe 8s infinite alternate ease-in-out; }
+        .organic-shape img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; transition: transform 1s ease; }
+        .organic-shape:hover img { transform: scale(1.1); }
+        .img-center { width: 400px; height: 460px; z-index: 2; transform: translateY(-30px); }
+        .img-center:hover { transform: translateY(-30px) scale(0.95) !important; filter: brightness(1.05); }
+        .img-left { width: 280px; height: 340px; left: 10%; z-index: 1; filter: blur(3px) brightness(0.95); opacity: 0.8; }
+        .img-left:hover { transform: scale(1.05) !important; filter: blur(0px) brightness(1); z-index: 5; opacity: 1; }
+        .img-right { width: 300px; height: 380px; right: 8%; z-index: 1; filter: blur(2px) brightness(0.95); opacity: 0.85; margin-top: 80px; }
+        .img-right:hover { transform: scale(1.05) !important; filter: blur(0px) brightness(1); z-index: 5; opacity: 1; }
+        @keyframes breathe { 0% { border-radius: 50% 40% 60% 40% / 40% 50% 40% 60%; } 50% { border-radius: 40% 60% 40% 50% / 60% 40% 50% 40%; } 100% { border-radius: 60% 50% 50% 60% / 50% 60% 60% 40%; } }
+            
+    </style>
+</head>
+<body>
+    <div id="loader"><h2 style="color: var(--primary-green); letter-spacing: 2px;">PPTX.STORE</h2><div class="progress-bar-container"><div class="progress-bar" id="progress-bar"></div></div></div>
+
+    <!-- Global Header -->
+    <header class="global-nav">
+        <a href="index.html" class="logo">PPTX.STORE</a>
+        <div class="nav-links">
+            <a href="index.html">首页</a>
+            <a href="about.html">关于我们</a>
+            <a href="services.html">服务介绍</a>
+            <!-- Links to backend application -->
+            <a href="http://127.0.0.1:5000/" target="_blank">PPT 工作台</a>
+            <a href="http://127.0.0.1:5000/book-split" target="_blank">文献拆分</a>
+        </div>
+    </header>
+
+    <div class="content-wrap">
+        <section class="hero">
+            <div class="hero-images">
+                <div class="organic-shape img-left float-elem" data-speed="1.2"><img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=600" alt="Team"></div>
+                <div class="organic-shape img-center float-elem" data-speed="0.8"><img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=800" alt="Meeting"></div>
+                <div class="organic-shape img-right float-elem" data-speed="1.5"><img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=600" alt="Work"></div>
+            </div>
+            <div class="hero-title">
+                <h1 id="hero-h1">你的灵感<br>更为生动。</h1>
+                <p id="hero-p">AI 驱动的 PPT 自动化工作台</p>
+            </div>
+        </section>
+            
+        
+
+        <section class="sticky-section">
+            <div class="sticky-left">
+                <h2>为了成为<br>您的“依靠”</h2>
+                <p class="scroll-text" data-trigger="text1">在人生的道路上，有时会遇到困难。</p>
+                <p class="scroll-text" data-trigger="text2">面对不安的明天，有时需要他人的帮助。</p>
+                <p class="scroll-text" data-trigger="text3">我们 PPTX 团队在这种时刻，<br>守护您的“灵感与创意”。</p><br><br>
+            </div>
+            <div class="scroll-right">
+                <div style="margin-bottom: 50px;"><span style="color: var(--primary-green); font-weight: bold;">01 Fact</span><div class="reveal-container" id="reveal-img-1"><img class="reveal-inner" src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800" alt="Fact 1"></div></div>
+                <div style="margin-bottom: 50px;"><span style="color: var(--primary-green); font-weight: bold;">02 Vision</span><div class="reveal-container" id="reveal-img-2"><img class="reveal-inner" src="https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&q=80&w=800" alt="Fact 2"></div></div>
+                <div style="margin-bottom: 50px;"><span style="color: var(--primary-green); font-weight: bold;">03 Action</span><div class="reveal-container" id="reveal-img-3"><img class="reveal-inner" src="https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&q=80&w=800" alt="Fact 3"></div></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Global Footer -->
+    <div class="wave-footer-container">
+        <div class="hand-drawn-icon">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="30" r="15" stroke="#222" stroke-width="4" fill="#f4f3ec"/>
+                <path d="M50 45 L50 80 M50 60 L30 40 M50 60 L70 40 M50 80 L35 100 M50 80 L65 100" stroke="#222" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(103, 183, 91, 0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(103, 183, 91, 0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(103, 183, 91, 0.7)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="var(--primary-green)" />
+            </g>
+        </svg>
+    </div>
+    <div class="footer-content">
+        <h2 style="margin-bottom: 20px;">PPTX.STORE</h2>
+        <p>© 2026 PPT 自动化工坊. All Rights Reserved.</p>
+    </div>
+
+    <!-- === Global Base Animations === -->
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+        window.addEventListener("load", () => {
+            const tl = gsap.timeline();
+            tl.to("#progress-bar", { width: "100%", duration: 0.6, ease: "power2.inOut" })
+              .to("#loader", { yPercent: -100, duration: 0.6, ease: "power4.inOut" });
+            
+            setTimeout(() => {
+                window.dispatchEvent(new Event('appLoaded'));
+            }, 1200);
+        });
+    </script>
+
+    <script>
+        window.addEventListener('appLoaded', () => {
+            gsap.to("#hero-h1", { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.7)" });
+            gsap.to("#hero-p", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", delay: 0.2 });
+            gsap.from(".organic-shape", { scale: 0, opacity: 0, duration: 1.5, stagger: 0.2, ease: "elastic.out(1, 0.5)" });
+
+            gsap.utils.toArray('.float-elem').forEach((elem, i) => {
+                let speed = parseFloat(elem.getAttribute('data-speed'));
+                gsap.to(elem, { 
+                    y: `+=${30 * speed}`, x: `+=${20 * speed}`, rotation: i%2===0? 2 : -2,
+                    duration: 4 * speed, ease: "sine.inOut", repeat: -1, yoyo: true 
+                });
+            });
+            
+            
+            
+            const textObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const imgId = entry.target.id; let textIndex = 1;
+                    if(imgId === 'reveal-img-1') textIndex = 1; if(imgId === 'reveal-img-2') textIndex = 2; if(imgId === 'reveal-img-3') textIndex = 3;
+                    const targetText = document.querySelector(`.scroll-text[data-trigger="text${textIndex}"]`);
+                    if(entry.isIntersecting) targetText.classList.add('active'); else targetText.classList.remove('active');
+                });
+            }, { root: null, rootMargin: "-40% 0px -40% 0px", threshold: 0 });
+
+            document.querySelectorAll('.reveal-container').forEach(container => textObserver.observe(container));
+
+            gsap.utils.toArray('.reveal-container').forEach(container => {
+                const innerImg = container.querySelector('.reveal-inner');
+                let tl = gsap.timeline({ scrollTrigger: { trigger: container, start: "top 85%", toggleActions: "play none none reverse" } });
+                tl.to(container, { clipPath: "inset(0% 0 0 0)", duration: 1.2, ease: "power3.inOut" }).to(innerImg, { y: "0%", scale: 1, duration: 1.2, ease: "power3.inOut" }, 0);
+            });
+        });
+    </script>
+</body>
+</html>
