@@ -87,7 +87,7 @@
         .global-nav .logo { font-size: 24px; font-weight: bold; letter-spacing: 2px; color: var(--primary-green); text-decoration: none;}
         .global-nav .nav-links { display: flex; gap: 30px; align-items: center; }
         .global-nav .nav-links a { text-decoration: none; color: var(--text-dark); font-weight: 500; font-size: 15px; position: relative; transition: color 0.3s ease; }
-        .global-nav .nav-links a:hover { color: var(--primary-green); }
+        .global-nav .nav-links a:hover, .global-nav .nav-links a.active { color: var(--primary-green); }
         
         /* 按钮水面波浪效果 (Bottom-to-Top Fill) */
         .btn-wave {
@@ -285,17 +285,8 @@
     </div>
 
     <!-- Unified Header -->
-    <header class="global-nav transparent-nav">
-        <a href="index.html" class="logo">PPTX.STORE</a>
-        <div class="nav-links">
-            <a href="index.html">首页</a>
-            <a href="https://app.pptx.store/">PPT 工作台</a>
-            <a href="https://app.pptx.store/book-split">文献拆分</a>
-            <a href="services.html">服务介绍</a>
-            <a href="about.html">关于我们</a>
-            <a href="https://app.pptx.store/" class="btn-wave">立即体验 →</a>
-        </div>
-    </header>
+    <header class="global-nav transparent-nav"></header>
+    <script src="assets/site-nav.js" data-active="home"></script>
 
     <!-- Hero Section (还原第一版叠放设计) -->
     <section class="hero">
@@ -324,7 +315,7 @@
             <p class="scroll-text" data-trigger="text2">面对不安的明天，有时需要他人的帮助。</p>
             <p class="scroll-text" data-trigger="text3">我们 PPTX 团队在这种时刻，<br>守护您的“灵感与创意”。</p>
             <br><br>
-            <a href="https://app.pptx.store/" class="btn-wave">了解我们的工作台</a>
+            <a href="https://app.pptx.store/workbench" class="btn-wave">了解我们的工作台</a>
         </div>
         
         <div class="scroll-right">
