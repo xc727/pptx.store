@@ -161,7 +161,7 @@
         }
         .hero-drift-track {
             position: absolute;
-            top: 12%;
+            top: 16%;
             left: 0;
             display: flex;
             align-items: flex-start;
@@ -454,10 +454,10 @@
                 .map(item => item.src);
             const doubled = [...shuffled, ...shuffled];
             driftTrack.innerHTML = doubled.map((src, index) => {
-                const lanes = [-16, 9, -7, 15, -12, 5];
+                const lanes = [-8, 7, -4, 10, -6, 4];
                 const width = 21.5 + Math.random() * 3.5;
                 const height = 29 + Math.random() * 4;
-                const floatY = lanes[index % lanes.length] + (-3 + Math.random() * 6);
+                const floatY = lanes[index % lanes.length] + (-2 + Math.random() * 4);
                 const tilt = -4 + Math.random() * 8;
                 const delay = -(index * 0.65 + Math.random() * 5);
                 return `<div class="organic-shape" style="--shape-width:${width.toFixed(2)}vw; --shape-height:${height.toFixed(2)}vh; --float-y:${floatY.toFixed(2)}vh; --tilt:${tilt.toFixed(2)}deg; --delay:${delay.toFixed(2)}s;"><div class="organic-shape-inner"><img src="${src}" alt=""></div></div>`;
