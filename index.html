@@ -161,19 +161,19 @@
         }
         .hero-drift-track {
             position: absolute;
-            top: 15%;
+            top: 12%;
             left: 0;
             display: flex;
             align-items: flex-start;
-            gap: clamp(260px, 16vw, 420px);
+            gap: clamp(78px, 5.2vw, 118px);
             width: max-content;
-            animation: heroDriftLeft 118s linear infinite;
+            animation: heroDriftLeft 168s linear infinite;
             will-change: transform;
         }
         .organic-shape {
             flex: 0 0 auto;
             width: auto;
-            max-width: clamp(260px, var(--shape-width, 28vw), 560px);
+            max-width: clamp(280px, var(--shape-width, 24vw), 430px);
             margin-top: var(--float-y, 0vh);
             transform: scale(1);
             transform-origin: center center;
@@ -184,10 +184,10 @@
         .organic-shape-inner {
             width: max-content;
             max-width: inherit;
-            border-radius: 22% 28% 24% 32% / 26% 20% 30% 24%;
+            border-radius: 34% 26% 38% 24% / 28% 40% 24% 36%;
             overflow: hidden;
             transform: translateY(0) rotate(var(--tilt, 0deg));
-            animation: templateFloat 8s infinite alternate ease-in-out, waterBlob 9s infinite alternate ease-in-out;
+            animation: templateFloat 10s infinite alternate ease-in-out, waterBlob 5.8s infinite alternate ease-in-out;
             animation-delay: var(--delay, 0s), calc(var(--delay, 0s) * -0.7);
             transition: filter 0.58s ease, box-shadow 0.58s ease, border-radius 0.68s ease;
             box-shadow: 0 24px 62px rgba(68, 94, 62, 0.13);
@@ -196,7 +196,7 @@
         .organic-shape-inner img {
             display: block;
             width: auto;
-            height: clamp(210px, var(--shape-height, 32vh), 390px);
+            height: clamp(250px, var(--shape-height, 31vh), 335px);
             max-width: inherit;
             object-fit: contain;
             pointer-events: none;
@@ -208,7 +208,7 @@
         .organic-shape:hover .organic-shape-inner {
             filter: brightness(1.03) saturate(1.08);
             box-shadow: 0 34px 86px rgba(68, 94, 62, 0.2);
-            border-radius: 16% 22% 18% 26% / 20% 16% 24% 18%;
+            border-radius: 42% 30% 34% 48% / 36% 48% 30% 42%;
         }
 
         @keyframes heroDriftLeft {
@@ -216,14 +216,14 @@
             100% { transform: translateX(-50%); }
         }
         @keyframes templateFloat {
-            0% { transform: translateY(-10px) rotate(calc(var(--tilt, 0deg) - 1deg)); }
-            100% { transform: translateY(12px) rotate(calc(var(--tilt, 0deg) + 1deg)); }
+            0% { transform: translateY(-8px) rotate(calc(var(--tilt, 0deg) - 0.8deg)); }
+            100% { transform: translateY(10px) rotate(calc(var(--tilt, 0deg) + 0.8deg)); }
         }
         @keyframes waterBlob {
-            0% { border-radius: 22% 28% 24% 32% / 26% 20% 30% 24%; }
-            38% { border-radius: 42% 35% 39% 31% / 34% 43% 29% 38%; }
-            72% { border-radius: 18% 24% 34% 22% / 22% 30% 20% 36%; }
-            100% { border-radius: 28% 20% 26% 18% / 20% 30% 22% 28%; }
+            0% { border-radius: 34% 26% 38% 24% / 28% 40% 24% 36%; }
+            34% { border-radius: 48% 30% 32% 44% / 42% 28% 46% 30%; }
+            68% { border-radius: 26% 44% 48% 30% / 30% 48% 28% 42%; }
+            100% { border-radius: 42% 34% 28% 46% / 46% 32% 42% 28%; }
         }
         @media (max-width: 760px) {
             .hero-drift-field { inset: 12% -34% 12% -34%; }
@@ -454,11 +454,12 @@
                 .map(item => item.src);
             const doubled = [...shuffled, ...shuffled];
             driftTrack.innerHTML = doubled.map((src, index) => {
-                const width = 28 + Math.random() * 14;
-                const height = 32 + Math.random() * 18;
-                const floatY = -30 + Math.random() * 64;
-                const tilt = -9 + Math.random() * 18;
-                const delay = -(index * 1.1 + Math.random() * 7);
+                const lanes = [-16, 9, -7, 15, -12, 5];
+                const width = 21.5 + Math.random() * 3.5;
+                const height = 29 + Math.random() * 4;
+                const floatY = lanes[index % lanes.length] + (-3 + Math.random() * 6);
+                const tilt = -4 + Math.random() * 8;
+                const delay = -(index * 0.65 + Math.random() * 5);
                 return `<div class="organic-shape" style="--shape-width:${width.toFixed(2)}vw; --shape-height:${height.toFixed(2)}vh; --float-y:${floatY.toFixed(2)}vh; --tilt:${tilt.toFixed(2)}deg; --delay:${delay.toFixed(2)}s;"><div class="organic-shape-inner"><img src="${src}" alt=""></div></div>`;
             }).join("");
         }
