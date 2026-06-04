@@ -161,13 +161,13 @@
         }
         .hero-drift-track {
             position: absolute;
-            top: 11%;
+            top: 15%;
             left: 0;
             display: flex;
-            align-items: center;
-            gap: 4vw;
+            align-items: flex-start;
+            gap: clamp(260px, 16vw, 420px);
             width: max-content;
-            animation: heroDriftLeft 92s linear infinite;
+            animation: heroDriftLeft 118s linear infinite;
             will-change: transform;
         }
         .organic-shape {
@@ -454,11 +454,11 @@
                 .map(item => item.src);
             const doubled = [...shuffled, ...shuffled];
             driftTrack.innerHTML = doubled.map((src, index) => {
-                const width = 21 + Math.random() * 10;
-                const height = 24 + Math.random() * 16;
-                const floatY = -7 + Math.random() * 26;
-                const tilt = -3 + Math.random() * 6;
-                const delay = -(index * 0.7 + Math.random() * 5);
+                const width = 28 + Math.random() * 14;
+                const height = 32 + Math.random() * 18;
+                const floatY = -30 + Math.random() * 64;
+                const tilt = -9 + Math.random() * 18;
+                const delay = -(index * 1.1 + Math.random() * 7);
                 return `<div class="organic-shape" style="--shape-width:${width.toFixed(2)}vw; --shape-height:${height.toFixed(2)}vh; --float-y:${floatY.toFixed(2)}vh; --tilt:${tilt.toFixed(2)}deg; --delay:${delay.toFixed(2)}s;"><div class="organic-shape-inner"><img src="${src}" alt=""></div></div>`;
             }).join("");
         }
