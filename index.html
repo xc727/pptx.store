@@ -170,24 +170,30 @@
             animation: heroDriftLeft 92s linear infinite;
             will-change: transform;
         }
-        .hero-drift-track:hover { animation-play-state: paused; }
         .organic-shape {
             flex: 0 0 auto;
             width: auto;
             max-width: clamp(260px, var(--shape-width, 28vw), 560px);
             margin-top: var(--float-y, 0vh);
+            transform: scale(1);
+            transform-origin: center center;
+            transition: transform 0.68s cubic-bezier(.2,.9,.2,1);
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        .organic-shape-inner {
+            width: max-content;
+            max-width: inherit;
             border-radius: 22% 28% 24% 32% / 26% 20% 30% 24%;
             overflow: hidden;
             transform: translateY(0) rotate(var(--tilt, 0deg));
             animation: templateFloat 8s infinite alternate ease-in-out, waterBlob 9s infinite alternate ease-in-out;
             animation-delay: var(--delay, 0s), calc(var(--delay, 0s) * -0.7);
-            cursor: pointer;
-            pointer-events: auto;
-            transition: transform 0.62s cubic-bezier(.2,.9,.2,1), filter 0.48s ease, box-shadow 0.48s ease, border-radius 0.62s ease;
+            transition: filter 0.58s ease, box-shadow 0.58s ease, border-radius 0.68s ease;
             box-shadow: 0 24px 62px rgba(68, 94, 62, 0.13);
             background: #fff;
         }
-        .organic-shape img {
+        .organic-shape-inner img {
             display: block;
             width: auto;
             height: clamp(210px, var(--shape-height, 32vh), 390px);
@@ -197,8 +203,9 @@
         }
         .organic-shape:hover {
             z-index: 5;
-            animation-play-state: paused;
-            transform: translateY(-18px) scale(1.18) rotate(0deg) !important;
+            transform: scale(1.12);
+        }
+        .organic-shape:hover .organic-shape-inner {
             filter: brightness(1.03) saturate(1.08);
             box-shadow: 0 34px 86px rgba(68, 94, 62, 0.2);
             border-radius: 16% 22% 18% 26% / 20% 16% 24% 18%;
@@ -222,7 +229,7 @@
             .hero-drift-field { inset: 12% -34% 12% -34%; }
             .hero-drift-track { gap: 28px; top: 8%; animation-duration: 78s; }
             .organic-shape { max-width: min(78vw, 330px); }
-            .organic-shape img { height: clamp(190px, var(--shape-height, 30vh), 310px); }
+            .organic-shape-inner img { height: clamp(190px, var(--shape-height, 30vh), 310px); }
         }
 
         /* === 左静右动 (Sticky Split Section) === */
@@ -452,7 +459,7 @@
                 const floatY = -7 + Math.random() * 26;
                 const tilt = -3 + Math.random() * 6;
                 const delay = -(index * 0.7 + Math.random() * 5);
-                return `<div class="organic-shape" style="--shape-width:${width.toFixed(2)}vw; --shape-height:${height.toFixed(2)}vh; --float-y:${floatY.toFixed(2)}vh; --tilt:${tilt.toFixed(2)}deg; --delay:${delay.toFixed(2)}s;"><img src="${src}" alt=""></div>`;
+                return `<div class="organic-shape" style="--shape-width:${width.toFixed(2)}vw; --shape-height:${height.toFixed(2)}vh; --float-y:${floatY.toFixed(2)}vh; --tilt:${tilt.toFixed(2)}deg; --delay:${delay.toFixed(2)}s;"><div class="organic-shape-inner"><img src="${src}" alt=""></div></div>`;
             }).join("");
         }
 
