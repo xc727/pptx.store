@@ -131,6 +131,8 @@
         .hero-title {
             text-align: center;
             z-index: 10;
+            color: #fff;
+            mix-blend-mode: difference;
         }
         .hero-title h1 {
             font-size: clamp(3rem, 6vw, 5rem);
@@ -140,74 +142,87 @@
             margin-bottom: 20px;
             opacity: 0;
             transform: translateY(30px);
+            color: currentColor;
         }
         .hero-title p {
             font-size: 1.2rem;
-            color: #555;
+            color: currentColor;
             letter-spacing: 2px;
             opacity: 0;
             transform: translateY(20px);
         }
 
-        /* 有机呼吸流体动画元素 (还原第一版重叠布局) */
         .hero-drift-field {
             position: absolute;
-            inset: 9% -10% 7% -8%;
+            inset: 7% -14% 8% -14%;
             z-index: 1;
             pointer-events: none;
-            overflow: visible;
+            overflow: hidden;
         }
         .hero-drift-track {
             position: absolute;
-            inset: 0;
-            width: 400%;
+            top: 11%;
+            left: 0;
             display: flex;
-            animation: heroDriftLeft 96s linear infinite;
+            align-items: center;
+            gap: 4vw;
+            width: max-content;
+            animation: heroDriftLeft 92s linear infinite;
             will-change: transform;
         }
-        .hero-drift-set {
-            position: relative;
-            flex: 0 0 25%;
-            height: 100%;
-        }
-        .shape-a { width: 300px; height: 280px; top: 6%; left: 12%; }
-        .shape-b { width: 250px; height: 260px; bottom: 6%; left: 35%; }
-        .shape-c { width: 380px; height: 350px; top: 12%; right: 12%; }
+        .hero-drift-track:hover { animation-play-state: paused; }
         .organic-shape {
-            position: absolute;
-            z-index: 1;
-            border-radius: 50% 40% 60% 40% / 40% 50% 40% 60%;
+            flex: 0 0 auto;
+            width: auto;
+            max-width: clamp(260px, var(--shape-width, 28vw), 560px);
+            margin-top: var(--float-y, 0vh);
+            border-radius: 22% 28% 24% 32% / 26% 20% 30% 24%;
             overflow: hidden;
-            animation: breathe 8s infinite alternate ease-in-out;
+            transform: translateY(0) rotate(var(--tilt, 0deg));
+            animation: templateFloat 8s infinite alternate ease-in-out, waterBlob 9s infinite alternate ease-in-out;
+            animation-delay: var(--delay, 0s), calc(var(--delay, 0s) * -0.7);
             cursor: pointer;
             pointer-events: auto;
-            transition: transform 0.35s ease, filter 0.35s ease;
-            box-shadow: 0 22px 56px rgba(68, 94, 62, 0.08);
+            transition: transform 0.62s cubic-bezier(.2,.9,.2,1), filter 0.48s ease, box-shadow 0.48s ease, border-radius 0.62s ease;
+            box-shadow: 0 24px 62px rgba(68, 94, 62, 0.13);
+            background: #fff;
         }
         .organic-shape img {
-            width: 100%; height: 100%;
-            object-fit: cover;
+            display: block;
+            width: auto;
+            height: clamp(210px, var(--shape-height, 32vh), 390px);
+            max-width: inherit;
+            object-fit: contain;
             pointer-events: none;
         }
         .organic-shape:hover {
-            transform: scale(0.975);
-            filter: brightness(0.97) saturate(1.04);
+            z-index: 5;
+            animation-play-state: paused;
+            transform: translateY(-18px) scale(1.18) rotate(0deg) !important;
+            filter: brightness(1.03) saturate(1.08);
+            box-shadow: 0 34px 86px rgba(68, 94, 62, 0.2);
+            border-radius: 16% 22% 18% 26% / 20% 16% 24% 18%;
         }
 
         @keyframes heroDriftLeft {
             0% { transform: translateX(0); }
-            100% { transform: translateX(-25%); }
+            100% { transform: translateX(-50%); }
         }
-        @keyframes breathe {
-            0% { border-radius: 58% 32% 66% 36% / 34% 62% 36% 64%; }
-            50% { border-radius: 34% 66% 38% 62% / 68% 34% 64% 36%; }
-            100% { border-radius: 66% 38% 34% 68% / 42% 70% 32% 58%; }
+        @keyframes templateFloat {
+            0% { transform: translateY(-10px) rotate(calc(var(--tilt, 0deg) - 1deg)); }
+            100% { transform: translateY(12px) rotate(calc(var(--tilt, 0deg) + 1deg)); }
+        }
+        @keyframes waterBlob {
+            0% { border-radius: 22% 28% 24% 32% / 26% 20% 30% 24%; }
+            38% { border-radius: 42% 35% 39% 31% / 34% 43% 29% 38%; }
+            72% { border-radius: 18% 24% 34% 22% / 22% 30% 20% 36%; }
+            100% { border-radius: 28% 20% 26% 18% / 20% 30% 22% 28%; }
         }
         @media (max-width: 760px) {
-            .hero-drift-field { inset: 12% -46% 12% -26%; }
-            .shape-a { width: 210px; height: 200px; top: 2%; left: 4%; }
-            .shape-b { width: 180px; height: 190px; bottom: 4%; left: 34%; }
-            .shape-c { width: 240px; height: 225px; top: 42%; right: 10%; }
+            .hero-drift-field { inset: 12% -34% 12% -34%; }
+            .hero-drift-track { gap: 28px; top: 8%; animation-duration: 78s; }
+            .organic-shape { max-width: min(78vw, 330px); }
+            .organic-shape img { height: clamp(190px, var(--shape-height, 30vh), 310px); }
         }
 
         /* === 左静右动 (Sticky Split Section) === */
@@ -321,56 +336,11 @@
     <header class="global-nav transparent-nav"></header>
     <script src="assets/site-nav.js" data-active="home"></script>
 
-    <!-- Hero Section (还原第一版叠放设计) -->
+    <!-- Hero Section -->
     <section class="hero">
         <!-- Floating Organic Shapes -->
         <div class="hero-drift-field" aria-hidden="true">
-            <div class="hero-drift-track">
-                <div class="hero-drift-set">
-                    <div class="organic-shape shape-a">
-                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                    <div class="organic-shape shape-b">
-                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                    <div class="organic-shape shape-c">
-                        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                </div>
-                <div class="hero-drift-set">
-                    <div class="organic-shape shape-a">
-                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                    <div class="organic-shape shape-b">
-                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                    <div class="organic-shape shape-c">
-                        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                </div>
-                <div class="hero-drift-set">
-                    <div class="organic-shape shape-a">
-                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                    <div class="organic-shape shape-b">
-                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                    <div class="organic-shape shape-c">
-                        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                </div>
-                <div class="hero-drift-set">
-                    <div class="organic-shape shape-a">
-                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                    <div class="organic-shape shape-b">
-                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                    <div class="organic-shape shape-c">
-                        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=400" alt="">
-                    </div>
-                </div>
-            </div>
+            <div class="hero-drift-track" id="hero-drift-track"></div>
         </div>
 
         <div class="hero-title">
@@ -449,6 +419,42 @@
     <script>
         // 注册 ScrollTrigger
         gsap.registerPlugin(ScrollTrigger);
+
+        const templateImages = [
+            "static/templates/颁奖.jpg",
+            "static/templates/读书分享.jpg",
+            "static/templates/非遗ppt模板.jpg",
+            "static/templates/高端模板.jpg",
+            "static/templates/高三班会模板.jpg",
+            "static/templates/公司介绍.jpg",
+            "static/templates/检察蓝模板.jpg",
+            "static/templates/腊八节模板.jpg",
+            "static/templates/玫瑰金理财模板.jpg",
+            "static/templates/美味食堂模板.jpg",
+            "static/templates/美妆模板.jpg",
+            "static/templates/融资模板.jpg",
+            "static/templates/商务模板2.jpg",
+            "static/templates/现代模板.jpg",
+            "static/templates/学生干部竞选模板.jpg",
+            "static/templates/杂质风模板.jpg"
+        ];
+
+        const driftTrack = document.getElementById("hero-drift-track");
+        if (driftTrack) {
+            const shuffled = templateImages
+                .map(src => ({ src, weight: Math.random() }))
+                .sort((a, b) => a.weight - b.weight)
+                .map(item => item.src);
+            const doubled = [...shuffled, ...shuffled];
+            driftTrack.innerHTML = doubled.map((src, index) => {
+                const width = 21 + Math.random() * 10;
+                const height = 24 + Math.random() * 16;
+                const floatY = -7 + Math.random() * 26;
+                const tilt = -3 + Math.random() * 6;
+                const delay = -(index * 0.7 + Math.random() * 5);
+                return `<div class="organic-shape" style="--shape-width:${width.toFixed(2)}vw; --shape-height:${height.toFixed(2)}vh; --float-y:${floatY.toFixed(2)}vh; --tilt:${tilt.toFixed(2)}deg; --delay:${delay.toFixed(2)}s;"><img src="${src}" alt=""></div>`;
+            }).join("");
+        }
 
         // 1. Loading 动画
         window.addEventListener("load", () => {
