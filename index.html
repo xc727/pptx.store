@@ -173,7 +173,7 @@
         .organic-shape {
             flex: 0 0 auto;
             width: auto;
-            max-width: clamp(280px, var(--shape-width, 24vw), 430px);
+            max-width: clamp(336px, var(--shape-width, 28.8vw), 516px);
             margin-top: var(--float-y, 0vh);
             transform: scale(1);
             transform-origin: center center;
@@ -196,7 +196,7 @@
         .organic-shape-inner img {
             display: block;
             width: auto;
-            height: clamp(250px, var(--shape-height, 31vh), 335px);
+            height: clamp(300px, var(--shape-height, 37.2vh), 402px);
             max-width: inherit;
             object-fit: contain;
             pointer-events: none;
@@ -455,8 +455,8 @@
             const doubled = [...shuffled, ...shuffled];
             driftTrack.innerHTML = doubled.map((src, index) => {
                 const lanes = [-8, 7, -4, 10, -6, 4];
-                const width = 21.5 + Math.random() * 3.5;
-                const height = 29 + Math.random() * 4;
+                const width = 25.8 + Math.random() * 4.2;
+                const height = 34.8 + Math.random() * 4.8;
                 const floatY = lanes[index % lanes.length] + (-2 + Math.random() * 4);
                 const tilt = -4 + Math.random() * 8;
                 const delay = -(index * 0.65 + Math.random() * 5);
