@@ -109,6 +109,11 @@
       gap: 12px;
       margin-top: 14px;
     }
+    .preview-panel {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
     .preview img {
       width: 100%;
       aspect-ratio: 16 / 9;
@@ -180,13 +185,12 @@
       <section>
         <div id="status" class="status">等待提交任务。</div>
         <div id="actions" class="actions"></div>
+        <div class="preview-panel">
+          <strong>预览图</strong>
+          <div id="preview" class="preview"></div>
+        </div>
       </section>
     </div>
-
-    <section style="margin-top:16px">
-      <strong>预览图</strong>
-      <div id="preview" class="preview"></div>
-    </section>
   </main>
 
   <script>
