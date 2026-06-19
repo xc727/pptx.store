@@ -118,13 +118,7 @@
       gap: 10px;
       align-items: end;
     }
-    .page-picker {
-      display: grid;
-      grid-template-columns: 34px 1fr 34px;
-      gap: 6px;
-      align-items: center;
-    }
-    .step-btn, .icon-btn {
+    .icon-btn {
       height: 36px;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -134,7 +128,7 @@
       font: inherit;
       font-weight: 800;
     }
-    .step-btn:hover, .icon-btn:hover { border-color: var(--accent); }
+    .icon-btn:hover { border-color: var(--accent); }
     .file-grid {
       display: grid;
       gap: 8px;
@@ -146,8 +140,8 @@
     }
     .send-bar {
       display: grid;
-      grid-template-columns: 40px 40px 1fr 96px;
-      gap: 8px;
+      grid-template-columns: 1fr 128px;
+      gap: 10px;
       align-items: center;
       padding-top: 2px;
     }
@@ -169,7 +163,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       color: var(--muted);
-      text-align: right;
+      text-align: left;
       font-size: 13px;
     }
     .workspace {
@@ -378,11 +372,7 @@
           <div class="compact-row">
             <div>
               <label for="page_count">页数</label>
-              <div class="page-picker">
-                <button class="step-btn" type="button" id="page-minus">−</button>
-                <input id="page_count" type="number" min="1" max="60" value="10">
-                <button class="step-btn" type="button" id="page-plus">＋</button>
-              </div>
+              <input id="page_count" type="number" min="1" max="60" value="10">
             </div>
             <div>
               <label for="style">风格要求</label>
@@ -409,10 +399,8 @@
       </form>
 
       <div class="send-bar">
-        <button class="icon-btn" type="button" title="添加附件">＋</button>
-        <button class="icon-btn" type="button" title="语音占位">≋</button>
-        <div class="pptx-pill">PPTX + ZIP</div>
-        <button id="submit-btn" class="primary" type="submit" form="job-form">发送</button>
+        <div class="pptx-pill">默认输出：PPTX + ZIP</div>
+        <button id="submit-btn" class="primary" type="submit" form="job-form">开始制作</button>
       </div>
     </aside>
 
@@ -634,14 +622,6 @@
       }
     });
 
-    document.getElementById('page-minus').addEventListener('click', () => {
-      pageCountEl.value = String(clampPageCount() - 1);
-      clampPageCount();
-    });
-    document.getElementById('page-plus').addEventListener('click', () => {
-      pageCountEl.value = String(clampPageCount() + 1);
-      clampPageCount();
-    });
     document.getElementById('prev-slide').addEventListener('click', () => setActivePreview(activePreview - 1));
     document.getElementById('next-slide').addEventListener('click', () => setActivePreview(activePreview + 1));
     document.getElementById('refresh-btn').addEventListener('click', heartbeat);
