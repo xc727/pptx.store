@@ -140,8 +140,7 @@
     }
     .send-bar {
       display: grid;
-      grid-template-columns: 1fr 128px;
-      gap: 10px;
+      grid-template-columns: 1fr;
       align-items: center;
       padding-top: 2px;
     }
@@ -169,7 +168,7 @@
     .workspace {
       min-width: 0;
       display: grid;
-      grid-template-rows: 58px minmax(0, 1fr) 126px;
+      grid-template-rows: 66px minmax(0, 1fr) 164px;
       background: #f7f8fa;
     }
     .topbar {
@@ -241,6 +240,12 @@
       border-color: #2563eb;
       box-shadow: 0 4px 12px rgba(37, 99, 235, .18);
     }
+    .thumb.placeholder {
+      display: grid;
+      place-items: center;
+      color: #8a94a3;
+      font-weight: 800;
+    }
     .thumb img {
       width: 100%;
       height: 100%;
@@ -251,13 +256,12 @@
       position: relative;
       min-width: 0;
       display: grid;
-      place-items: start center;
-      padding: 18px 24px 64px;
+      place-items: center;
+      padding: 30px;
       background: #f7f8fa;
     }
     .slide-canvas {
-      width: min(96%, 1040px);
-      max-height: 100%;
+      width: min(92%, 1040px);
       aspect-ratio: 16 / 9;
       border-radius: 4px;
       background: #fff;
@@ -279,6 +283,18 @@
       color: var(--muted);
       line-height: 1.8;
       padding: 32px;
+    }
+    .slide-placeholder {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      color: #8a94a3;
+      background: #eef0f3;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.7;
+      padding: 24px;
     }
     .floating-nav {
       position: absolute;
@@ -310,7 +326,7 @@
       background: #fff;
       min-height: 0;
       display: grid;
-      grid-template-rows: 36px 1fr;
+      grid-template-rows: 44px 1fr;
     }
     .notes-head {
       display: flex;
@@ -352,7 +368,7 @@
       body { overflow: auto; }
       .shell { height: auto; grid-template-columns: 1fr; }
       .sidebar { min-height: auto; }
-      .workspace { grid-template-rows: auto minmax(420px, 60vh) 160px; }
+      .workspace { grid-template-rows: auto minmax(460px, 60vh) 180px; }
       .stage { grid-template-columns: 110px 1fr; }
       .topbar { min-height: 58px; }
       .top-actions { display: none; }
@@ -400,12 +416,11 @@
             <label for="requirement_files">要求文档</label>
             <input id="requirement_files" type="file" multiple>
           </div>
-          <div class="hint">默认输出可编辑 PPTX + ZIP。任务会按顺序排队执行。</div>
+          <div class="hint">任务会按顺序排队执行，完成后会出现下载入口。</div>
         </div>
       </form>
 
       <div class="send-bar">
-        <div class="pptx-pill">默认输出：PPTX + ZIP</div>
         <button id="submit-btn" class="primary" type="submit" form="job-form">开始制作</button>
       </div>
     </aside>
@@ -458,6 +473,7 @@
     const heartbeatMs = 20000;
     let previews = [];
     let activePreview = 0;
+    let expectedPreviewCount = 0;
 
     function setStatus(text, cls = '') {
       statusEl.className = 'status ' + cls;
@@ -566,7 +582,11 @@
       }
       activePreview = Math.max(0, Math.min(previews.length - 1, index));
       const item = previews[activePreview];
-      slideCanvasEl.innerHTML = '<img src="' + item.url + '" alt="' + item.name + '">';
+      if (item && item.url) {
+        slideCanvasEl.innerHTML = '<img src="' + item.url + '" alt="' + item.name + '">';
+      } else {
+        slideCanvasEl.innerHTML = '<div class="slide-placeholder">第 ' + String(activePreview + 1) + ' 页<br>等待生成预览图</div>';
+      }
       slideCounterEl.textContent = String(activePreview + 1) + ' / ' + previews.length;
       notesSlideEl.textContent = 'Slide ' + String(activePreview + 1) + ' / ' + previews.length;
       [...thumbsEl.querySelectorAll('.thumb')].forEach((node, idx) => {
@@ -574,13 +594,31 @@
       });
     }
 
-    function renderPreviews(items) {
-      previews = items || [];
+    function previewIndex(item, fallback) {
+      const name = item && item.name ? item.name : '';
+      const match = name.match(/page_(\d+)/i);
+      if (match) return Math.max(0, Number(match[1]) - 1);
+      return fallback;
+    }
+
+    function ensurePreviewPlaceholders(count) {
+      expectedPreviewCount = Math.max(expectedPreviewCount, count, previews.length);
+      while (previews.length < expectedPreviewCount) previews.push(null);
+    }
+
+    function renderPreviews(items, expectedCount = expectedPreviewCount) {
+      ensurePreviewPlaceholders(expectedCount);
+      (items || []).forEach((item, fallback) => {
+        const index = previewIndex(item, fallback);
+        if (index >= 0 && index < previews.length) previews[index] = item;
+      });
       thumbsEl.innerHTML = '';
       previews.forEach((item, index) => {
         const row = document.createElement('div');
         row.className = 'thumb-row';
-        row.innerHTML = '<span>' + String(index + 1) + '</span><button class="thumb" type="button"><img src="' + item.url + '" alt="' + item.name + '"></button>';
+        row.innerHTML = item && item.url
+          ? '<span>' + String(index + 1) + '</span><button class="thumb" type="button"><img src="' + item.url + '" alt="' + item.name + '"></button>'
+          : '<span>' + String(index + 1) + '</span><button class="thumb placeholder" type="button">等待</button>';
         row.querySelector('button').addEventListener('click', () => setActivePreview(index));
         thumbsEl.appendChild(row);
       });
@@ -593,6 +631,7 @@
       while (true) {
         const job = await request('/api/ppt/jobs/' + encodeURIComponent(jobId));
         const requestedPages = job.request && job.request.page_count ? job.request.page_count : clampPageCount();
+        ensurePreviewPlaceholders(Number(requestedPages || 0));
         setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>' + statusLabel(job) + '\n<strong>页数：</strong>' + requestedPages + '\n<strong>进度：</strong>' + (job.progress || 0) + '%\n<strong>步骤：</strong>' + (job.current_step || ''));
 
         if (job.status === 'done') {
@@ -615,9 +654,7 @@
     async function loadPreview(jobId, silent = false) {
       try {
         const data = await request('/api/ppt/jobs/' + encodeURIComponent(jobId) + '/preview');
-        if ((data.previews || []).length !== previews.length) {
-          renderPreviews(data.previews || []);
-        }
+        renderPreviews(data.previews || [], expectedPreviewCount);
       } catch (error) {
         if (!silent) throw error;
       }
@@ -627,8 +664,9 @@
       event.preventDefault();
       previews = [];
       activePreview = 0;
+      expectedPreviewCount = clampPageCount();
       thumbsEl.innerHTML = '';
-      slideCanvasEl.innerHTML = '<div class="empty-slide">任务已提交，正在等待预览图。</div>';
+      renderPreviews([], expectedPreviewCount);
       submitBtn.disabled = true;
       const topic = document.getElementById('topic').value.trim();
       deckTitleEl.textContent = topic || '正在生成 PPT';
