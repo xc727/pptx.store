@@ -244,6 +244,7 @@
       display: block;
     }
     .canvas-wrap {
+      position: relative;
       min-width: 0;
       display: grid;
       place-items: center;
@@ -277,7 +278,7 @@
     .floating-nav {
       position: absolute;
       left: 50%;
-      bottom: 190px;
+      bottom: 34px;
       transform: translateX(-50%);
       display: flex;
       align-items: center;
@@ -423,13 +424,12 @@
           <div id="slide-canvas" class="slide-canvas">
             <div class="empty-slide">提交任务后，右侧会显示生成出的 PPT 预览图。<br>完成后可下载最终 PPTX/ZIP。</div>
           </div>
+          <div class="floating-nav">
+            <button type="button" id="prev-slide">‹</button>
+            <span id="slide-counter">0 / 0</span>
+            <button type="button" id="next-slide">›</button>
+          </div>
         </div>
-      </div>
-
-      <div class="floating-nav">
-        <button type="button" id="prev-slide">‹</button>
-        <span id="slide-counter">0 / 0</span>
-        <button type="button" id="next-slide">›</button>
       </div>
 
       <section class="notes">
