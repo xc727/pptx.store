@@ -169,7 +169,7 @@
     .workspace {
       min-width: 0;
       display: grid;
-      grid-template-rows: 66px minmax(0, 1fr) 164px;
+      grid-template-rows: 58px minmax(0, 1fr) 126px;
       background: #f7f8fa;
     }
     .topbar {
@@ -251,12 +251,13 @@
       position: relative;
       min-width: 0;
       display: grid;
-      place-items: center;
-      padding: 30px;
+      place-items: start center;
+      padding: 18px 24px 64px;
       background: #f7f8fa;
     }
     .slide-canvas {
-      width: min(92%, 1040px);
+      width: min(96%, 1040px);
+      max-height: 100%;
       aspect-ratio: 16 / 9;
       border-radius: 4px;
       background: #fff;
@@ -282,7 +283,7 @@
     .floating-nav {
       position: absolute;
       left: 50%;
-      bottom: 34px;
+      bottom: 18px;
       transform: translateX(-50%);
       display: flex;
       align-items: center;
@@ -309,7 +310,7 @@
       background: #fff;
       min-height: 0;
       display: grid;
-      grid-template-rows: 44px 1fr;
+      grid-template-rows: 36px 1fr;
     }
     .notes-head {
       display: flex;
@@ -351,7 +352,7 @@
       body { overflow: auto; }
       .shell { height: auto; grid-template-columns: 1fr; }
       .sidebar { min-height: auto; }
-      .workspace { grid-template-rows: auto minmax(460px, 60vh) 180px; }
+      .workspace { grid-template-rows: auto minmax(420px, 60vh) 160px; }
       .stage { grid-template-columns: 110px 1fr; }
       .topbar { min-height: 58px; }
       .top-actions { display: none; }
@@ -461,6 +462,23 @@
     function setStatus(text, cls = '') {
       statusEl.className = 'status ' + cls;
       statusEl.innerHTML = text;
+    }
+
+    function statusLabel(job) {
+      const status = job.status || '';
+      const step = job.current_step || '';
+      if (status === 'queued') return '排队中';
+      if (status === 'outlining') return '正在生成大纲';
+      if (status === 'generating_slides') return '正在生成 PPT 图片';
+      if (status === 'converting_pptx') {
+        if (step.includes('layer') || step.includes('batch')) return '正在进行可编辑转化：正在分层处理';
+        if (step.includes('merge')) return '正在进行可编辑转化：正在合并 PPTX';
+        return '正在进行可编辑转化';
+      }
+      if (status === 'packaging') return '正在打包下载文件';
+      if (status === 'done') return '已完成';
+      if (status === 'failed') return '任务失败';
+      return status || '处理中';
     }
 
     function clampPageCount() {
@@ -575,7 +593,7 @@
       while (true) {
         const job = await request('/api/ppt/jobs/' + encodeURIComponent(jobId));
         const requestedPages = job.request && job.request.page_count ? job.request.page_count : clampPageCount();
-        setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>' + job.status + '\n<strong>页数：</strong>' + requestedPages + '\n<strong>进度：</strong>' + (job.progress || 0) + '%\n<strong>步骤：</strong>' + (job.current_step || ''));
+        setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>' + statusLabel(job) + '\n<strong>页数：</strong>' + requestedPages + '\n<strong>进度：</strong>' + (job.progress || 0) + '%\n<strong>步骤：</strong>' + (job.current_step || ''));
 
         if (job.status === 'done') {
           const download = '<div class="actions"><a class="action" href="/api/ppt/jobs/' + encodeURIComponent(jobId) + '/download">下载 PPTX/ZIP</a></div>';
