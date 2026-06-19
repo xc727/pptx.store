@@ -167,6 +167,8 @@
     }
     .workspace {
       min-width: 0;
+      min-height: 0;
+      height: 100vh;
       display: grid;
       grid-template-rows: 66px minmax(0, 1fr) 164px;
       background: #f7f8fa;
@@ -208,17 +210,29 @@
     }
     .stage {
       min-height: 0;
+      overflow: hidden;
       display: grid;
       grid-template-columns: 260px minmax(0, 1fr);
       background: #fff;
     }
     .thumbs {
       min-height: 0;
-      overflow: auto;
+      height: 100%;
+      max-height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-gutter: stable;
       padding: 18px 14px;
       background: #ffffff;
       color: #1f2937;
       border-right: 1px solid #e2e5ec;
+    }
+    .thumbs::-webkit-scrollbar { width: 10px; }
+    .thumbs::-webkit-scrollbar-track { background: #f3f4f6; }
+    .thumbs::-webkit-scrollbar-thumb {
+      background: #c9ced8;
+      border-radius: 999px;
+      border: 2px solid #f3f4f6;
     }
     .thumb-row {
       display: grid;
@@ -368,7 +382,7 @@
       body { overflow: auto; }
       .shell { height: auto; grid-template-columns: 1fr; }
       .sidebar { min-height: auto; }
-      .workspace { grid-template-rows: auto minmax(460px, 60vh) 180px; }
+      .workspace { height: auto; grid-template-rows: auto minmax(460px, 60vh) 180px; }
       .stage { grid-template-columns: 110px 1fr; }
       .topbar { min-height: 58px; }
       .top-actions { display: none; }
