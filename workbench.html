@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PPT 工作台</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d8deea;
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --green: #15803d;
+      --red: #b42318;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 28px auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    h1 { margin: 0; font-size: 26px; line-height: 1.2; }
+    .mode { color: var(--muted); font-size: 14px; }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 16px;
+      align-items: start;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+    }
+    textarea { min-height: 132px; resize: vertical; }
+    .row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 12px;
+    }
+    button {
+      margin-top: 16px;
+      width: 100%;
+      border: 0;
+      border-radius: 6px;
+      padding: 12px 14px;
+      font: inherit;
+      font-weight: 700;
+      color: #fff;
+      background: var(--blue);
+      cursor: pointer;
+    }
+    button:hover { background: var(--blue-dark); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .status {
+      min-height: 168px;
+      white-space: pre-wrap;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .status strong { color: var(--text); }
+    .done { color: var(--green); }
+    .failed { color: var(--red); }
+    .actions { display: grid; gap: 10px; margin-top: 14px; }
+    a.action {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 6px;
+      padding: 11px 12px;
+      color: #fff;
+      background: var(--green);
+      font-weight: 700;
+    }
+    .preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .preview img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #eef2f7;
+    }
+    .hint {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    @media (max-width: 820px) {
+      .layout { grid-template-columns: 1fr; }
+      header { align-items: start; flex-direction: column; }
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>PPT 工作台</h1>
+        <div class="hint">提交主题和风格，后端通过已登录的 ChatGPT 网页生成分层 PPTX/ZIP。</div>
+      </div>
+      <div id="mode" class="mode">正在连接服务...</div>
+    </header>
+
+    <div class="layout">
+      <section>
+        <form id="job-form">
+          <label for="topic">PPT 主题</label>
+          <textarea id="topic" required placeholder="例如：季度经营概览、产品发布会方案、年度复盘汇报"></textarea>
+
+          <div class="row">
+            <div>
+              <label for="page_count">页数</label>
+              <input id="page_count" type="number" min="1" max="60" value="1">
+            </div>
+            <div>
+              <label for="need_editable_pptx">输出类型</label>
+              <select id="need_editable_pptx">
+                <option value="true">可编辑 PPTX + ZIP</option>
+                <option value="false">预览产物</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="style">风格要求</label>
+          <input id="style" placeholder="例如：商业汇报风格，干净专业，蓝白配色，图表清晰">
+
+          <label for="materials">资料文件</label>
+          <input id="materials" type="file" multiple>
+          <div class="hint">任务异步执行。生成较慢时请保持页面打开，完成后会出现下载入口。</div>
+
+          <button id="submit-btn" type="submit">生成 PPT</button>
+        </form>
+      </section>
+
+      <section>
+        <div id="status" class="status">等待提交任务。</div>
+        <div id="actions" class="actions"></div>
+      </section>
+    </div>
+
+    <section style="margin-top:16px">
+      <strong>预览图</strong>
+      <div id="preview" class="preview"></div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('job-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const statusEl = document.getElementById('status');
+    const actionsEl = document.getElementById('actions');
+    const previewEl = document.getElementById('preview');
+    const modeEl = document.getElementById('mode');
+
+    function setStatus(text, cls = '') {
+      statusEl.className = 'status ' + cls;
+      statusEl.innerHTML = text;
+    }
+
+    async function request(path, options = {}) {
+      const resp = await fetch(path, options);
+      const contentType = resp.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || data.error || '请求失败');
+        return data;
+      }
+      if (!resp.ok) throw new Error('请求失败：' + resp.status);
+      return resp;
+    }
+
+    async function loadHealth() {
+      try {
+        const data = await request('/api/health');
+        modeEl.textContent = '服务在线：' + (data.pipeline_mode || 'unknown');
+      } catch (error) {
+        modeEl.textContent = '服务未连接';
+        modeEl.style.color = 'var(--red)';
+      }
+    }
+
+    async function createJob() {
+      const files = document.getElementById('materials').files;
+      if (files && files.length) {
+        const fd = new FormData();
+        fd.append('topic', document.getElementById('topic').value.trim());
+        fd.append('page_count', document.getElementById('page_count').value);
+        fd.append('style', document.getElementById('style').value.trim());
+        fd.append('need_editable_pptx', document.getElementById('need_editable_pptx').value);
+        for (const file of files) fd.append('materials', file);
+        return request('/api/ppt/jobs', { method: 'POST', body: fd });
+      }
+      return request('/api/ppt/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: document.getElementById('topic').value.trim(),
+          page_count: Number(document.getElementById('page_count').value || 1),
+          style: document.getElementById('style').value.trim(),
+          need_editable_pptx: document.getElementById('need_editable_pptx').value === 'true'
+        })
+      });
+    }
+
+    async function pollJob(jobId) {
+      while (true) {
+        const job = await request('/api/ppt/jobs/' + encodeURIComponent(jobId));
+        setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>' + job.status + '\n<strong>进度：</strong>' + (job.progress || 0) + '%\n<strong>步骤：</strong>' + (job.current_step || ''));
+
+        if (job.status === 'done') {
+          setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>done\n<strong>进度：</strong>100%\n已完成，可以下载。', 'done');
+          actionsEl.innerHTML = '<a class="action" href="/api/ppt/jobs/' + encodeURIComponent(jobId) + '/download">下载 ZIP/PPTX</a>';
+          await loadPreview(jobId);
+          break;
+        }
+
+        if (job.status === 'failed') {
+          setStatus('<strong>任务失败</strong>\n' + (job.error || '未知错误'), 'failed');
+          break;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+    }
+
+    async function loadPreview(jobId) {
+      const data = await request('/api/ppt/jobs/' + encodeURIComponent(jobId) + '/preview');
+      previewEl.innerHTML = '';
+      for (const item of data.previews || []) {
+        const img = document.createElement('img');
+        img.src = item.url;
+        img.alt = item.name;
+        previewEl.appendChild(img);
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      actionsEl.innerHTML = '';
+      previewEl.innerHTML = '';
+      submitBtn.disabled = true;
+      setStatus('正在提交任务...');
+      try {
+        const data = await createJob();
+        setStatus('任务已创建：' + data.job_id + '\n正在生成...');
+        await pollJob(data.job_id);
+      } catch (error) {
+        setStatus(String(error.message || error), 'failed');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    loadHealth();
+  </script>
+</body>
+</html>
