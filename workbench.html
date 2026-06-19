@@ -163,8 +163,14 @@
           <label for="style">风格要求</label>
           <input id="style" placeholder="例如：商业汇报风格，干净专业，蓝白配色，图表清晰">
 
+          <label for="reference_images">参考图</label>
+          <input id="reference_images" type="file" multiple accept="image/*">
+
           <label for="materials">资料文件</label>
           <input id="materials" type="file" multiple>
+
+          <label for="requirement_files">要求文档</label>
+          <input id="requirement_files" type="file" multiple>
           <div class="hint">任务异步执行。生成较慢时请保持页面打开，完成后会出现下载入口。</div>
 
           <button id="submit-btn" type="submit">生成 PPT</button>
@@ -219,14 +225,19 @@
     }
 
     async function createJob() {
-      const files = document.getElementById('materials').files;
-      if (files && files.length) {
+      const referenceImages = document.getElementById('reference_images').files;
+      const materialFiles = document.getElementById('materials').files;
+      const requirementFiles = document.getElementById('requirement_files').files;
+      const hasFiles = (referenceImages && referenceImages.length) || (materialFiles && materialFiles.length) || (requirementFiles && requirementFiles.length);
+      if (hasFiles) {
         const fd = new FormData();
         fd.append('topic', document.getElementById('topic').value.trim());
         fd.append('page_count', document.getElementById('page_count').value);
         fd.append('style', document.getElementById('style').value.trim());
         fd.append('need_editable_pptx', document.getElementById('need_editable_pptx').value);
-        for (const file of files) fd.append('materials', file);
+        for (const file of referenceImages) fd.append('reference_images', file);
+        for (const file of materialFiles) fd.append('materials', file);
+        for (const file of requirementFiles) fd.append('requirement_files', file);
         return request('/api/ppt/jobs', { method: 'POST', body: fd });
       }
       return request('/api/ppt/jobs', {
