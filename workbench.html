@@ -200,10 +200,30 @@
     const actionsEl = document.getElementById('actions');
     const previewEl = document.getElementById('preview');
     const modeEl = document.getElementById('mode');
+    const heartbeatMs = 20000;
 
     function setStatus(text, cls = '') {
       statusEl.className = 'status ' + cls;
       statusEl.innerHTML = text;
+    }
+
+    function clientId() {
+      const key = 'ppt_workbench_client_id';
+      let value = localStorage.getItem(key);
+      if (!value) {
+        value = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+        localStorage.setItem(key, value);
+      }
+      return value;
+    }
+
+    function updateServiceMode(data) {
+      const queue = data.queue || {};
+      const queued = Math.max(0, Number(queue.queued || 0));
+      const active = queue.active_job_id ? '正在生成' : '空闲';
+      const online = Number(data.online_count || 0);
+      modeEl.textContent = '服务在线：' + (data.pipeline_mode || 'unknown') + '｜在线：' + online + '｜排队：' + queued + '｜' + active;
+      modeEl.style.color = 'var(--muted)';
     }
 
     async function request(path, options = {}) {
@@ -221,10 +241,23 @@
     async function loadHealth() {
       try {
         const data = await request('/api/health');
-        modeEl.textContent = '服务在线：' + (data.pipeline_mode || 'unknown');
+        updateServiceMode({ ...data, online_count: 0 });
       } catch (error) {
         modeEl.textContent = '服务未连接';
         modeEl.style.color = 'var(--red)';
+      }
+    }
+
+    async function heartbeat() {
+      try {
+        const data = await request('/api/presence/heartbeat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ client_id: clientId(), page: 'workbench' })
+        });
+        updateServiceMode(data);
+      } catch (error) {
+        await loadHealth();
       }
     }
 
@@ -305,7 +338,8 @@
       }
     });
 
-    loadHealth();
+    heartbeat();
+    setInterval(heartbeat, heartbeatMs);
   </script>
 </body>
 </html>
