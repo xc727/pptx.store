@@ -6,205 +6,475 @@
   <title>PPT 工作台</title>
   <style>
     :root {
-      --bg: #f5f7fb;
-      --panel: #ffffff;
-      --text: #172033;
-      --muted: #667085;
-      --line: #d8deea;
-      --blue: #2563eb;
-      --blue-dark: #1d4ed8;
-      --green: #15803d;
+      --bg: #f6f4ef;
+      --panel: #fffdf8;
+      --panel-2: #f2f4f7;
+      --ink: #171a22;
+      --muted: #6e6a63;
+      --line: #ded8cf;
+      --accent: #ef8f76;
+      --accent-dark: #dd755e;
+      --green: #126b3a;
       --red: #b42318;
+      --black: #101010;
     }
     * { box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       margin: 0;
       font-family: "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
       background: var(--bg);
-      color: var(--text);
+      color: var(--ink);
+      overflow: hidden;
     }
-    main {
-      width: min(1120px, calc(100% - 32px));
-      margin: 28px auto;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 16px;
-      margin-bottom: 18px;
-    }
-    h1 { margin: 0; font-size: 26px; line-height: 1.2; }
-    .mode { color: var(--muted); font-size: 14px; }
-    .layout {
+    .shell {
+      height: 100vh;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 360px;
-      gap: 16px;
-      align-items: start;
+      grid-template-columns: 360px minmax(0, 1fr);
     }
-    section {
-      background: var(--panel);
+    .sidebar {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      padding: 18px 16px;
+      border-right: 1px solid var(--line);
+      background: #fbf8f1;
+      min-height: 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .logo {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 18px;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--accent-dark);
+      font-size: 20px;
+    }
+    .mode {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      min-height: 18px;
+    }
+    form {
+      min-height: 0;
+      display: grid;
+      align-content: start;
+      gap: 9px;
     }
     label {
       display: block;
-      margin: 14px 0 6px;
-      font-weight: 700;
-      font-size: 14px;
+      margin-bottom: 5px;
+      color: #3f3b35;
+      font-size: 13px;
+      font-weight: 800;
     }
-    input, textarea, select {
+    input, textarea {
       width: 100%;
       border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 10px 12px;
+      border-radius: 8px;
+      padding: 9px 10px;
       font: inherit;
-      color: var(--text);
+      color: var(--ink);
       background: #fff;
+      outline: none;
     }
-    textarea { min-height: 132px; resize: vertical; }
-    .row {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 12px;
+    textarea {
+      min-height: 92px;
+      max-height: 116px;
+      resize: vertical;
+      line-height: 1.45;
     }
-    button {
-      margin-top: 16px;
-      width: 100%;
-      border: 0;
-      border-radius: 6px;
-      padding: 12px 14px;
-      font: inherit;
-      font-weight: 700;
-      color: #fff;
-      background: var(--blue);
-      cursor: pointer;
+    input[type="file"] {
+      padding: 7px 9px;
+      font-size: 13px;
     }
-    button:hover { background: var(--blue-dark); }
-    button:disabled { opacity: .55; cursor: not-allowed; }
-    .status {
-      min-height: 168px;
-      white-space: pre-wrap;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-    .status strong { color: var(--text); }
-    .done { color: var(--green); }
-    .failed { color: var(--red); }
-    .actions { display: grid; gap: 10px; margin-top: 14px; }
-    a.action {
-      display: block;
-      text-align: center;
-      text-decoration: none;
-      border-radius: 6px;
-      padding: 11px 12px;
-      color: #fff;
-      background: var(--green);
-      font-weight: 700;
-    }
-    .preview {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 12px;
-      margin-top: 14px;
-    }
-    .preview-panel {
-      margin-top: 18px;
-      padding-top: 16px;
-      border-top: 1px solid var(--line);
-    }
-    .preview img {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
+    .card {
       border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #eef2f7;
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--panel);
+      box-shadow: 0 1px 3px rgba(17, 24, 39, .04);
+    }
+    .compact-row {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 10px;
+      align-items: end;
+    }
+    .page-picker {
+      display: grid;
+      grid-template-columns: 34px 1fr 34px;
+      gap: 6px;
+      align-items: center;
+    }
+    .step-btn, .icon-btn {
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+    }
+    .step-btn:hover, .icon-btn:hover { border-color: var(--accent); }
+    .file-grid {
+      display: grid;
+      gap: 8px;
     }
     .hint {
-      margin-top: 10px;
       color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .send-bar {
+      display: grid;
+      grid-template-columns: 40px 40px 1fr 96px;
+      gap: 8px;
+      align-items: center;
+      padding-top: 2px;
+    }
+    button.primary {
+      height: 42px;
+      border: 0;
+      border-radius: 9px;
+      color: #fff;
+      background: var(--accent);
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button.primary:hover { background: var(--accent-dark); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .pptx-pill {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--muted);
+      text-align: right;
       font-size: 13px;
+    }
+    .workspace {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: 66px minmax(0, 1fr) 164px;
+      background: #f7f8fa;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 20px;
+      border-bottom: 1px solid #d8dbe2;
+      background: #fff;
+    }
+    .deck-title {
+      min-width: 0;
+      font-size: 17px;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .share {
+      padding: 9px 14px;
+      border-radius: 8px;
+      background: var(--black);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 800;
+      pointer-events: none;
+      opacity: .75;
+    }
+    .stage {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      background: #fff;
+    }
+    .thumbs {
+      min-height: 0;
+      overflow: auto;
+      padding: 18px 14px;
+      background: #0f0f0f;
+      color: #fff;
+    }
+    .thumb-row {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      margin-bottom: 14px;
+      color: #d5d5d5;
+      font-weight: 700;
+    }
+    .thumb {
+      aspect-ratio: 16 / 9;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background: #252525;
+      overflow: hidden;
+    }
+    .thumb.active { border-color: #fff; }
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .canvas-wrap {
+      min-width: 0;
+      display: grid;
+      place-items: center;
+      padding: 30px;
+      background: #f7f8fa;
+    }
+    .slide-canvas {
+      width: min(92%, 1040px);
+      aspect-ratio: 16 / 9;
+      border-radius: 4px;
+      background: #fff;
+      border: 1px solid #e2e5ec;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, .08);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .slide-canvas img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #fff;
+    }
+    .empty-slide {
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.8;
+      padding: 32px;
+    }
+    .floating-nav {
+      position: absolute;
+      left: 50%;
+      bottom: 190px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, .88);
+      color: #fff;
+      font-weight: 800;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, .18);
+    }
+    .floating-nav button {
+      width: 28px;
+      height: 28px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+      font-size: 20px;
+    }
+    .notes {
+      border-top: 1px solid #d8dbe2;
+      background: #fff;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: 44px 1fr;
+    }
+    .notes-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      border-bottom: 1px solid #eceef3;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .status {
+      padding: 16px;
+      color: #333;
+      overflow: auto;
+      white-space: pre-wrap;
       line-height: 1.6;
     }
-    @media (max-width: 820px) {
-      .layout { grid-template-columns: 1fr; }
-      header { align-items: start; flex-direction: column; }
-      .row { grid-template-columns: 1fr; }
+    .status strong { color: var(--ink); }
+    .done { color: var(--green); }
+    .failed { color: var(--red); }
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--green);
+      text-decoration: none;
+      font-weight: 800;
+    }
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .shell { height: auto; grid-template-columns: 1fr; }
+      .sidebar { min-height: auto; }
+      .workspace { grid-template-rows: auto minmax(460px, 60vh) 180px; }
+      .stage { grid-template-columns: 110px 1fr; }
+      .topbar { min-height: 58px; }
+      .top-actions { display: none; }
+      .floating-nav { display: none; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <header>
+  <main class="shell">
+    <aside class="sidebar">
       <div>
-        <h1>PPT 工作台</h1>
-        <div class="hint">提交主题和风格，后端通过已登录的 ChatGPT 网页生成分层 PPTX/ZIP。</div>
+        <div class="brand">
+          <div class="brand-title"><span class="logo">◌</span><span>生成高质量 PPT</span></div>
+          <button class="icon-btn" type="button" title="刷新状态" id="refresh-btn">↻</button>
+        </div>
+        <div id="mode" class="mode">正在连接服务...</div>
       </div>
-      <div id="mode" class="mode">正在连接服务...</div>
-    </header>
 
-    <div class="layout">
-      <section>
-        <form id="job-form">
+      <form id="job-form">
+        <div class="card">
           <label for="topic">PPT 主题</label>
           <textarea id="topic" required placeholder="例如：季度经营概览、产品发布会方案、年度复盘汇报"></textarea>
-
-          <div class="row">
+          <div class="compact-row">
             <div>
               <label for="page_count">页数</label>
-              <input id="page_count" type="number" min="1" max="60" value="1">
+              <div class="page-picker">
+                <button class="step-btn" type="button" id="page-minus">−</button>
+                <input id="page_count" type="number" min="1" max="60" value="10">
+                <button class="step-btn" type="button" id="page-plus">＋</button>
+              </div>
             </div>
             <div>
-              <label for="need_editable_pptx">输出类型</label>
-              <select id="need_editable_pptx">
-                <option value="true">可编辑 PPTX + ZIP</option>
-                <option value="false">预览产物</option>
-              </select>
+              <label for="style">风格要求</label>
+              <input id="style" placeholder="商业汇报风格，干净专业，蓝白配色">
             </div>
           </div>
-
-          <label for="style">风格要求</label>
-          <input id="style" placeholder="例如：商业汇报风格，干净专业，蓝白配色，图表清晰">
-
-          <label for="reference_images">参考图</label>
-          <input id="reference_images" type="file" multiple accept="image/*">
-
-          <label for="materials">资料文件</label>
-          <input id="materials" type="file" multiple>
-
-          <label for="requirement_files">要求文档</label>
-          <input id="requirement_files" type="file" multiple>
-          <div class="hint">任务异步执行。生成较慢时请保持页面打开，完成后会出现下载入口。</div>
-
-          <button id="submit-btn" type="submit">生成 PPT</button>
-        </form>
-      </section>
-
-      <section>
-        <div id="status" class="status">等待提交任务。</div>
-        <div id="actions" class="actions"></div>
-        <div class="preview-panel">
-          <strong>预览图</strong>
-          <div id="preview" class="preview"></div>
         </div>
+
+        <div class="card file-grid">
+          <div>
+            <label for="reference_images">风格参考图</label>
+            <input id="reference_images" type="file" multiple accept="image/*">
+          </div>
+          <div>
+            <label for="materials">资料文件</label>
+            <input id="materials" type="file" multiple>
+          </div>
+          <div>
+            <label for="requirement_files">要求文档</label>
+            <input id="requirement_files" type="file" multiple>
+          </div>
+          <div class="hint">默认输出可编辑 PPTX + ZIP。任务会按顺序排队执行。</div>
+        </div>
+      </form>
+
+      <div class="send-bar">
+        <button class="icon-btn" type="button" title="添加附件">＋</button>
+        <button class="icon-btn" type="button" title="语音占位">≋</button>
+        <div class="pptx-pill">PPTX + ZIP</div>
+        <button id="submit-btn" class="primary" type="submit" form="job-form">发送</button>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar">
+        <div id="deck-title" class="deck-title">等待创建 PPT</div>
+        <div class="top-actions">
+          <span>Mark up</span>
+          <span>Comments</span>
+          <span>Edit</span>
+          <span>100%</span>
+          <span>Present</span>
+          <span class="share">Share</span>
+        </div>
+      </header>
+
+      <div class="stage">
+        <aside id="thumbs" class="thumbs"></aside>
+        <div class="canvas-wrap">
+          <div id="slide-canvas" class="slide-canvas">
+            <div class="empty-slide">提交任务后，右侧会显示生成出的 PPT 预览图。<br>完成后可下载最终 PPTX/ZIP。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="floating-nav">
+        <button type="button" id="prev-slide">‹</button>
+        <span id="slide-counter">0 / 0</span>
+        <button type="button" id="next-slide">›</button>
+      </div>
+
+      <section class="notes">
+        <div class="notes-head"><span>SPEAKER NOTES</span><span id="notes-slide">Slide 0 / 0</span></div>
+        <div id="status" class="status">等待提交任务。</div>
       </section>
-    </div>
+    </section>
   </main>
 
   <script>
     const form = document.getElementById('job-form');
     const submitBtn = document.getElementById('submit-btn');
     const statusEl = document.getElementById('status');
-    const actionsEl = document.getElementById('actions');
-    const previewEl = document.getElementById('preview');
     const modeEl = document.getElementById('mode');
+    const deckTitleEl = document.getElementById('deck-title');
+    const thumbsEl = document.getElementById('thumbs');
+    const slideCanvasEl = document.getElementById('slide-canvas');
+    const slideCounterEl = document.getElementById('slide-counter');
+    const notesSlideEl = document.getElementById('notes-slide');
+    const pageCountEl = document.getElementById('page_count');
     const heartbeatMs = 20000;
+    let previews = [];
+    let activePreview = 0;
 
     function setStatus(text, cls = '') {
       statusEl.className = 'status ' + cls;
       statusEl.innerHTML = text;
+    }
+
+    function clampPageCount() {
+      const value = Math.max(1, Math.min(60, Number(pageCountEl.value || 10)));
+      pageCountEl.value = String(value);
+      return value;
     }
 
     function clientId() {
@@ -262,41 +532,62 @@
     }
 
     async function createJob() {
+      const pageCount = clampPageCount();
       const referenceImages = document.getElementById('reference_images').files;
       const materialFiles = document.getElementById('materials').files;
       const requirementFiles = document.getElementById('requirement_files').files;
-      const hasFiles = (referenceImages && referenceImages.length) || (materialFiles && materialFiles.length) || (requirementFiles && requirementFiles.length);
-      if (hasFiles) {
-        const fd = new FormData();
-        fd.append('topic', document.getElementById('topic').value.trim());
-        fd.append('page_count', document.getElementById('page_count').value);
-        fd.append('style', document.getElementById('style').value.trim());
-        fd.append('need_editable_pptx', document.getElementById('need_editable_pptx').value);
-        for (const file of referenceImages) fd.append('reference_images', file);
-        for (const file of materialFiles) fd.append('materials', file);
-        for (const file of requirementFiles) fd.append('requirement_files', file);
-        return request('/api/ppt/jobs', { method: 'POST', body: fd });
+      const fd = new FormData();
+      fd.append('topic', document.getElementById('topic').value.trim());
+      fd.append('page_count', String(pageCount));
+      fd.append('style', document.getElementById('style').value.trim());
+      fd.append('need_editable_pptx', 'true');
+      for (const file of referenceImages) fd.append('reference_images', file);
+      for (const file of materialFiles) fd.append('materials', file);
+      for (const file of requirementFiles) fd.append('requirement_files', file);
+      return request('/api/ppt/jobs', { method: 'POST', body: fd });
+    }
+
+    function setActivePreview(index) {
+      if (!previews.length) {
+        activePreview = 0;
+        slideCounterEl.textContent = '0 / 0';
+        notesSlideEl.textContent = 'Slide 0 / 0';
+        return;
       }
-      return request('/api/ppt/jobs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topic: document.getElementById('topic').value.trim(),
-          page_count: Number(document.getElementById('page_count').value || 1),
-          style: document.getElementById('style').value.trim(),
-          need_editable_pptx: document.getElementById('need_editable_pptx').value === 'true'
-        })
+      activePreview = Math.max(0, Math.min(previews.length - 1, index));
+      const item = previews[activePreview];
+      slideCanvasEl.innerHTML = '<img src="' + item.url + '" alt="' + item.name + '">';
+      slideCounterEl.textContent = String(activePreview + 1) + ' / ' + previews.length;
+      notesSlideEl.textContent = 'Slide ' + String(activePreview + 1) + ' / ' + previews.length;
+      [...thumbsEl.querySelectorAll('.thumb')].forEach((node, idx) => {
+        node.classList.toggle('active', idx === activePreview);
       });
+    }
+
+    function renderPreviews(items) {
+      previews = items || [];
+      thumbsEl.innerHTML = '';
+      previews.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = 'thumb-row';
+        row.innerHTML = '<span>' + String(index + 1) + '</span><button class="thumb" type="button"><img src="' + item.url + '" alt="' + item.name + '"></button>';
+        row.querySelector('button').addEventListener('click', () => setActivePreview(index));
+        thumbsEl.appendChild(row);
+      });
+      if (previews.length) {
+        setActivePreview(Math.min(activePreview, previews.length - 1));
+      }
     }
 
     async function pollJob(jobId) {
       while (true) {
         const job = await request('/api/ppt/jobs/' + encodeURIComponent(jobId));
-        setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>' + job.status + '\n<strong>进度：</strong>' + (job.progress || 0) + '%\n<strong>步骤：</strong>' + (job.current_step || ''));
+        const requestedPages = job.request && job.request.page_count ? job.request.page_count : clampPageCount();
+        setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>' + job.status + '\n<strong>页数：</strong>' + requestedPages + '\n<strong>进度：</strong>' + (job.progress || 0) + '%\n<strong>步骤：</strong>' + (job.current_step || ''));
 
         if (job.status === 'done') {
-          setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>done\n<strong>进度：</strong>100%\n已完成，可以下载。', 'done');
-          actionsEl.innerHTML = '<a class="action" href="/api/ppt/jobs/' + encodeURIComponent(jobId) + '/download">下载 ZIP/PPTX</a>';
+          const download = '<div class="actions"><a class="action" href="/api/ppt/jobs/' + encodeURIComponent(jobId) + '/download">下载 PPTX/ZIP</a></div>';
+          setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>done\n<strong>页数：</strong>' + requestedPages + '\n<strong>进度：</strong>100%\n已完成，可以下载。' + download, 'done');
           await loadPreview(jobId);
           break;
         }
@@ -306,30 +597,35 @@
           break;
         }
 
+        await loadPreview(jobId, true);
         await new Promise(resolve => setTimeout(resolve, 1500));
       }
     }
 
-    async function loadPreview(jobId) {
-      const data = await request('/api/ppt/jobs/' + encodeURIComponent(jobId) + '/preview');
-      previewEl.innerHTML = '';
-      for (const item of data.previews || []) {
-        const img = document.createElement('img');
-        img.src = item.url;
-        img.alt = item.name;
-        previewEl.appendChild(img);
+    async function loadPreview(jobId, silent = false) {
+      try {
+        const data = await request('/api/ppt/jobs/' + encodeURIComponent(jobId) + '/preview');
+        if ((data.previews || []).length !== previews.length) {
+          renderPreviews(data.previews || []);
+        }
+      } catch (error) {
+        if (!silent) throw error;
       }
     }
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      actionsEl.innerHTML = '';
-      previewEl.innerHTML = '';
+      previews = [];
+      activePreview = 0;
+      thumbsEl.innerHTML = '';
+      slideCanvasEl.innerHTML = '<div class="empty-slide">任务已提交，正在等待预览图。</div>';
       submitBtn.disabled = true;
-      setStatus('正在提交任务...');
+      const topic = document.getElementById('topic').value.trim();
+      deckTitleEl.textContent = topic || '正在生成 PPT';
+      setStatus('正在提交任务...\n页数：' + clampPageCount());
       try {
         const data = await createJob();
-        setStatus('任务已创建：' + data.job_id + '\n正在生成...');
+        setStatus('任务已创建：' + data.job_id + '\n页数：' + clampPageCount() + '\n正在生成...');
         await pollJob(data.job_id);
       } catch (error) {
         setStatus(String(error.message || error), 'failed');
@@ -337,6 +633,19 @@
         submitBtn.disabled = false;
       }
     });
+
+    document.getElementById('page-minus').addEventListener('click', () => {
+      pageCountEl.value = String(clampPageCount() - 1);
+      clampPageCount();
+    });
+    document.getElementById('page-plus').addEventListener('click', () => {
+      pageCountEl.value = String(clampPageCount() + 1);
+      clampPageCount();
+    });
+    document.getElementById('prev-slide').addEventListener('click', () => setActivePreview(activePreview - 1));
+    document.getElementById('next-slide').addEventListener('click', () => setActivePreview(activePreview + 1));
+    document.getElementById('refresh-btn').addEventListener('click', heartbeat);
+    pageCountEl.addEventListener('change', clampPageCount);
 
     heartbeat();
     setInterval(heartbeat, heartbeatMs);
