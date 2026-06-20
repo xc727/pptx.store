@@ -491,7 +491,7 @@
         <aside id="thumbs" class="thumbs"></aside>
         <div class="canvas-wrap">
           <div id="slide-canvas" class="slide-canvas">
-            <div class="empty-slide">提交任务后，右侧会显示生成出的 PPT 预览图。<br>完成后可下载最终 PPTX/ZIP。</div>
+            <div class="empty-slide">提交任务后，右侧会显示生成出的 PPT 预览图。<br>完成后可下载最终 PPTX。</div>
           </div>
           <div class="floating-nav">
             <button type="button" id="prev-slide">‹</button>
@@ -500,7 +500,7 @@
           </div>
           <div id="download-panel" class="download-panel" aria-live="polite">
             <span>已完成</span>
-            <a id="download-link" href="#">下载 PPTX/ZIP</a>
+            <a id="download-link" href="#">下载 PPTX</a>
           </div>
         </div>
       </div>
@@ -540,7 +540,7 @@
 
     function setDownloadVisible(jobId, visible) {
       if (visible && jobId) {
-        downloadLinkEl.href = '/api/ppt/jobs/' + encodeURIComponent(jobId) + '/download';
+        downloadLinkEl.href = '/api/ppt/jobs/' + encodeURIComponent(jobId) + '/download/pptx';
         downloadPanelEl.classList.add('show');
       } else {
         downloadPanelEl.classList.remove('show');
