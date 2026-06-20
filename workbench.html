@@ -396,7 +396,7 @@
       <div>
         <div class="brand">
           <div class="brand-title"><span class="logo">◌</span><span>生成高质量 PPT</span></div>
-          <button class="icon-btn" type="button" title="刷新状态" id="refresh-btn">↻</button>
+          <button class="icon-btn" type="button" title="刷新当前任务状态" id="refresh-btn">↻</button>
         </div>
         <div id="mode" class="mode">正在连接服务...</div>
       </div>
@@ -485,9 +485,12 @@
     const notesSlideEl = document.getElementById('notes-slide');
     const pageCountEl = document.getElementById('page_count');
     const heartbeatMs = 20000;
+    const currentJobKey = 'ppt_workbench_current_job';
     let previews = [];
     let activePreview = 0;
     let expectedPreviewCount = 0;
+    let activeJobId = '';
+    let pollToken = 0;
 
     function setStatus(text, cls = '') {
       statusEl.className = 'status ' + cls;
@@ -525,6 +528,26 @@
         localStorage.setItem(key, value);
       }
       return value;
+    }
+
+    function saveCurrentJob(jobId, topic, pageCount) {
+      activeJobId = jobId || '';
+      if (!activeJobId) return;
+      localStorage.setItem(currentJobKey, JSON.stringify({
+        job_id: activeJobId,
+        topic: topic || '',
+        page_count: Number(pageCount || 0),
+        saved_at: Date.now()
+      }));
+    }
+
+    function loadCurrentJob() {
+      try {
+        const raw = localStorage.getItem(currentJobKey);
+        return raw ? JSON.parse(raw) : null;
+      } catch (error) {
+        return null;
+      }
     }
 
     function updateServiceMode(data) {
@@ -641,12 +664,21 @@
       }
     }
 
+    function renderJobStatus(job, jobId, requestedPages) {
+      setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>' + statusLabel(job) + '\n<strong>页数：</strong>' + requestedPages + '\n<strong>进度：</strong>' + (job.progress || 0) + '%\n<strong>步骤：</strong>' + (job.current_step || ''));
+    }
+
     async function pollJob(jobId) {
+      const myToken = ++pollToken;
+      activeJobId = jobId;
       while (true) {
+        if (myToken !== pollToken) return;
         const job = await request('/api/ppt/jobs/' + encodeURIComponent(jobId));
         const requestedPages = job.request && job.request.page_count ? job.request.page_count : clampPageCount();
+        saveCurrentJob(jobId, job.request && job.request.topic ? job.request.topic : deckTitleEl.textContent, requestedPages);
+        if (job.request && job.request.topic) deckTitleEl.textContent = job.request.topic;
         ensurePreviewPlaceholders(Number(requestedPages || 0));
-        setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>' + statusLabel(job) + '\n<strong>页数：</strong>' + requestedPages + '\n<strong>进度：</strong>' + (job.progress || 0) + '%\n<strong>步骤：</strong>' + (job.current_step || ''));
+        renderJobStatus(job, jobId, requestedPages);
 
         if (job.status === 'done') {
           const download = '<div class="actions"><a class="action" href="/api/ppt/jobs/' + encodeURIComponent(jobId) + '/download">下载 PPTX/ZIP</a></div>';
@@ -662,6 +694,29 @@
 
         await loadPreview(jobId, true);
         await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+    }
+
+    async function refreshCurrentJob() {
+      await heartbeat();
+      const jobId = activeJobId || (loadCurrentJob() || {}).job_id;
+      if (!jobId) return;
+      try {
+        const job = await request('/api/ppt/jobs/' + encodeURIComponent(jobId));
+        const requestedPages = job.request && job.request.page_count ? job.request.page_count : expectedPreviewCount;
+        activeJobId = jobId;
+        if (job.request && job.request.topic) deckTitleEl.textContent = job.request.topic;
+        ensurePreviewPlaceholders(Number(requestedPages || 0));
+        renderJobStatus(job, jobId, requestedPages);
+        await loadPreview(jobId, true);
+        if (job.status === 'done') {
+          const download = '<div class="actions"><a class="action" href="/api/ppt/jobs/' + encodeURIComponent(jobId) + '/download">下载 PPTX/ZIP</a></div>';
+          setStatus('<strong>任务 ID：</strong>' + jobId + '\n<strong>状态：</strong>done\n<strong>页数：</strong>' + requestedPages + '\n<strong>进度：</strong>100%\n已完成，可以下载。' + download, 'done');
+        } else if (job.status !== 'failed') {
+          pollJob(jobId);
+        }
+      } catch (error) {
+        setStatus('无法恢复当前任务：' + String(error.message || error), 'failed');
       }
     }
 
@@ -687,6 +742,7 @@
       setStatus('正在提交任务...\n页数：' + clampPageCount());
       try {
         const data = await createJob();
+        saveCurrentJob(data.job_id, topic, clampPageCount());
         setStatus('任务已创建：' + data.job_id + '\n页数：' + clampPageCount() + '\n正在生成...');
         await pollJob(data.job_id);
       } catch (error) {
@@ -698,10 +754,20 @@
 
     document.getElementById('prev-slide').addEventListener('click', () => setActivePreview(activePreview - 1));
     document.getElementById('next-slide').addEventListener('click', () => setActivePreview(activePreview + 1));
-    document.getElementById('refresh-btn').addEventListener('click', heartbeat);
+    document.getElementById('refresh-btn').addEventListener('click', refreshCurrentJob);
     pageCountEl.addEventListener('change', clampPageCount);
 
-    heartbeat();
+    const savedJob = loadCurrentJob();
+    if (savedJob && savedJob.job_id) {
+      activeJobId = savedJob.job_id;
+      expectedPreviewCount = Number(savedJob.page_count || 0);
+      if (savedJob.topic) deckTitleEl.textContent = savedJob.topic;
+      if (expectedPreviewCount) renderPreviews([], expectedPreviewCount);
+      setStatus('正在恢复上一次任务：' + savedJob.job_id);
+      refreshCurrentJob();
+    } else {
+      heartbeat();
+    }
     setInterval(heartbeat, heartbeatMs);
   </script>
 </body>
