@@ -1,4 +1,4 @@
-const BACKEND_URL = process.env.PPT_BACKEND_URL;
+const BACKEND_URL = 'https://api.pptx.store';
 const SERVICE_KEY = process.env.PPT_SERVICE_API_KEY;
 
 function targetUrl(path, query = '') {
