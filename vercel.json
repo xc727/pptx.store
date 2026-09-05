@@ -1,7 +1,7 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/", "destination": "/workbench.html" },
+    { "source": "/", "destination": "/index.html" },
     { "source": "/workbench", "destination": "/workbench.html" },
     { "source": "/admin", "destination": "/admin.html" }
   ],
