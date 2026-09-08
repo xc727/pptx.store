@@ -2,8 +2,7 @@
   "version": 2,
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
-    { "source": "/workbench", "destination": "/workbench.html" },
-    { "source": "/admin", "destination": "/admin.html" }
+    { "source": "/workbench", "destination": "/workbench.html" }
   ],
   "functions": {
     "api/**/*.js": {

@@ -88,6 +88,19 @@
         .global-nav .nav-links { display: flex; gap: 30px; align-items: center; }
         .global-nav .nav-links a { text-decoration: none; color: var(--text-dark); font-weight: 500; font-size: 15px; position: relative; transition: color 0.3s ease; }
         .global-nav .nav-links a:hover, .global-nav .nav-links a.active { color: var(--primary-green); }
+
+        .announcement-dialog { width: min(680px, calc(100vw - 32px)); max-height: min(720px, calc(100vh - 56px)); border: 0; border-radius: 18px; padding: 0; color: var(--text-dark); box-shadow: 0 26px 80px rgba(0,0,0,.26); }
+        .announcement-dialog::backdrop { background: rgba(20, 30, 24, .48); backdrop-filter: blur(3px); }
+        .announcement-card { padding: 28px; background: #fff; }
+        .announcement-head { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-bottom:16px; border-bottom:1px solid #e7ebe5; }
+        .announcement-head h2 { font-size: 24px; color: var(--primary-green); }
+        .announcement-close { width:36px; height:36px; border:0; border-radius:50%; background:#edf4ed; color:#35633d; font-size:24px; line-height:1; cursor:pointer; }
+        .announcement-list { display:grid; gap:14px; margin-top:18px; max-height: min(520px, calc(100vh - 210px)); overflow:auto; padding-right:4px; }
+        .announcement-item { border:1px solid #dfe8df; border-radius:12px; padding:16px; background:#fbfdfb; }
+        .announcement-item h3 { font-size:18px; margin:0 0 5px; }
+        .announcement-time { color:#78907e; font-size:13px; }
+        .announcement-content { white-space:pre-wrap; margin:10px 0 0; line-height:1.8; }
+        .announcement-empty { color:#78907e; padding:30px 0; text-align:center; }
         
         /* 按钮水面波浪效果 (Bottom-to-Top Fill) */
         .btn-wave {
@@ -346,6 +359,13 @@
     <header class="global-nav transparent-nav"></header>
     <script src="assets/site-nav.js" data-active="home"></script>
 
+    <dialog class="announcement-dialog" id="announcements" aria-labelledby="announcements-title">
+        <div class="announcement-card">
+            <div class="announcement-head"><h2 id="announcements-title">项目公告</h2><button class="announcement-close" id="announcement-close" aria-label="关闭公告">×</button></div>
+            <div id="announcement-list" class="announcement-list"><div class="announcement-empty">正在读取公告…</div></div>
+        </div>
+    </dialog>
+
     <!-- Hero Section -->
     <section class="hero">
         <!-- Floating Organic Shapes -->
@@ -427,6 +447,31 @@
 
     <!-- === 核心动画脚本 === -->
     <script>
+        (() => {
+            const dialog = document.getElementById('announcements');
+            const list = document.getElementById('announcement-list');
+            const close = document.getElementById('announcement-close');
+            const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+            const time = value => new Intl.DateTimeFormat('zh-CN',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
+            const open = async () => {
+                if (!dialog.open) dialog.showModal();
+                try {
+                    const response = await fetch('/api/announcements');
+                    const payload = await response.json();
+                    if (!response.ok) throw new Error('读取失败');
+                    const rows = payload.announcements || [];
+                    list.innerHTML = rows.length ? rows.map(item => `<article class="announcement-item"><h3>${escape(item.title)}</h3><div class="announcement-time">${time(item.created_at)}</div><p class="announcement-content">${escape(item.content)}</p></article>`).join('') : '<div class="announcement-empty">暂无公告。</div>';
+                } catch (_) { list.innerHTML = '<div class="announcement-empty">公告暂时无法读取。</div>'; }
+            };
+            document.addEventListener('click', event => {
+                const link = event.target.closest('a[href="/#announcements"]');
+                if (link) { event.preventDefault(); open(); }
+            });
+            if (location.hash === '#announcements') setTimeout(open, 80);
+            close.addEventListener('click', () => dialog.close());
+            dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+        })();
+
         // 注册 ScrollTrigger
         gsap.registerPlugin(ScrollTrigger);
 
