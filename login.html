@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登录 · PPTX.STORE</title>
+  <link rel="icon" href="/favicon.ico?v=20260914" sizes="any">
+  <link rel="icon" type="image/png" href="/logo.png?v=20260914">
+  <link rel="apple-touch-icon" href="/logo.png?v=20260914">
+  <style>
+    :root{--ink:#19233a;--muted:#77829a;--orange:#f25b22;--line:#e8eaf0;--paper:#fffaf6}*{box-sizing:border-box}body{min-height:100vh;margin:0;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#fff8f2,#f7f9ff 54%,#fff4eb);font:15px/1.5 "Microsoft YaHei","PingFang SC",sans-serif;color:var(--ink)}.card{width:min(100%,420px);padding:34px;background:#fff;border:1px solid rgba(242,91,34,.15);border-radius:20px;box-shadow:0 20px 60px rgba(58,42,26,.12)}.brand{display:flex;align-items:center;gap:10px;margin-bottom:28px;font-size:22px;font-weight:900}.brand img{width:37px;height:37px;object-fit:contain}.brand small{display:block;margin-top:2px;color:var(--muted);font-size:12px;font-weight:500}.tabs{display:grid;grid-template-columns:1fr 1fr;margin-bottom:22px;border-bottom:1px solid var(--line)}.tab{padding:10px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font:inherit;font-weight:800;cursor:pointer}.tab.on{border-color:var(--orange);color:var(--orange)}h1{margin:0 0 5px;font-size:24px}p{margin:0;color:var(--muted)}label{display:block;margin:18px 0 7px;font-weight:800}input{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;outline:0}input:focus{border-color:#ff9a72;box-shadow:0 0 0 3px #fff0e9}.hint{margin-top:10px;font-size:12px;color:var(--muted)}button.submit{width:100%;margin-top:24px;padding:13px;border:0;border-radius:10px;background:var(--orange);color:#fff;font:inherit;font-weight:900;cursor:pointer}.submit:disabled{opacity:.55;cursor:wait}.status{min-height:22px;margin-top:13px;color:#b43817;font-size:13px}.legal{margin-top:19px;text-align:center;font-size:12px;color:var(--muted)}a{color:var(--orange);text-decoration:none}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand"><img src="/static/brand/logo.png" alt="PPTX.STORE"><div>PPTX.STORE<small>由chatgpt-image2.5提供底层服务</small></div></div>
+    <div class="tabs"><button class="tab on" data-mode="login">登录</button><button class="tab" data-mode="register">注册</button></div>
+    <h1 id="heading">欢迎回来</h1><p id="intro">登录后继续创建、预览和下载你的 PPT。</p>
+    <form id="form"><label for="phone">手机号</label><input id="phone" inputmode="numeric" autocomplete="tel" maxlength="11" placeholder="请输入中国大陆手机号" required><label for="password">密码</label><input id="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" placeholder="至少 8 位" required><button class="submit" id="submit" type="submit">登录</button><div class="status" id="status"></div></form>
+    <div class="legal" id="legal">新账户注册即获赠 5 点，可生成 5 页 PPT。</div>
+  </main>
+  <script>
+    (function(){var _local=location.protocol==='file:'||/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(location.host);if(_local)return;try{var x=new XMLHttpRequest;x.open('GET','http://127.0.0.1:5001/api/health',false);x.timeout=500;x.send(null);if(x.status>=200&&x.status<300){try{var o=JSON.parse(x.responseText);if(o&&o.ok){location.replace('http://127.0.0.1:5001/login'+location.search+location.hash)}}catch(_){}}}catch(_){}})();
+    const $=id=>document.getElementById(id);let mode='login';const next=new URLSearchParams(location.search).get('return_to')||'/workbench';
+    function setMode(value){mode=value;document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.dataset.mode===mode));$('heading').textContent=mode==='login'?'欢迎回来':'创建账户';$('intro').textContent=mode==='login'?'登录后继续创建、预览和下载你的 PPT。':'用手机号创建账户，立即获得 5 点免费额度。';$('submit').textContent=mode==='login'?'登录':'注册并领取 5 点';$('password').autocomplete=mode==='login'?'current-password':'new-password';$('status').textContent=''}document.querySelectorAll('.tab').forEach(e=>e.onclick=()=>setMode(e.dataset.mode));
+    $('form').onsubmit=async e=>{e.preventDefault();const btn=$('submit'),status=$('status');btn.disabled=true;status.textContent='正在处理…';try{const r=await fetch('/api/auth/'+(mode==='login'?'login':'register'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:$('phone').value.trim(),password:$('password').value})});const data=await r.json();if(!r.ok)throw new Error(data.detail||'操作失败');location.href=next.startsWith('/')?next:'/workbench'}catch(err){status.textContent=err.message||'网络异常，请稍后重试'}finally{btn.disabled=false}};
+    fetch('/api/auth/me').then(r=>r.ok?r.json():null).then(data=>{if(data?.user)location.href=next.startsWith('/')?next:'/workbench'}).catch(()=>{});
+  </script>
+</body>
+</html>

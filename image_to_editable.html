@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>图片转可编辑工作台｜PPTX.STORE</title>
+<link rel="icon" href="/favicon.ico?v=20260914" sizes="any">
+<link rel="icon" type="image/png" href="/logo.png?v=20260914">
+<link rel="apple-touch-icon" href="/logo.png?v=20260914">
+<style>
+:root{--o:#f45b20;--os:#fff1e9;--ink:#17233c;--muted:#7b879b;--line:#e6eaf1;--bg:#f6f7fb;--white:#fff;--green:#29a875;--amber:#c7770c;--red:#c34a4a;--r:12px;--shadow:0 10px 28px rgba(35,53,91,.06);color-scheme:light}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:14px/1.5 "Microsoft YaHei UI","PingFang SC","Segoe UI",sans-serif}button,input,textarea,select{font:inherit}button,a{transition:.18s ease}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(244,91,32,.18);outline-offset:2px}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 24px;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(35,53,91,.03)}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink)}.brand b{font-size:19px;letter-spacing:-.03em}.brand small{color:var(--muted);font-size:12px;margin-left:8px}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800}
+.badge.ok{background:#e6f6ee;color:var(--green)}.badge.warn{background:#fff4dc;color:var(--amber)}.badge.bad{background:#ffe7e7;color:var(--red)}.badge.run{background:var(--os);color:#bd481b}
+.dot{width:7px;height:7px;border-radius:50%;background:#bbc2ce}.dot.ok{background:var(--green);box-shadow:0 0 0 3px rgba(41,168,117,.12)}.dot.run{background:var(--o);animation:pulse 1.4s infinite}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(244,91,32,.4)}50%{box-shadow:0 0 0 6px rgba(244,91,32,0)}}
+.btn{border:1px solid var(--line);border-radius:9px;padding:9px 14px;background:#fff;color:#4c5870;font-weight:750;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:#ffb28e;color:var(--o)}.btn.primary{background:var(--o);border-color:var(--o);color:#fff;font-weight:900;box-shadow:0 8px 18px rgba(244,91,32,.22)}.btn.primary:hover{background:#d94913;color:#fff}.btn.primary[disabled],.btn[disabled]{background:#f3d4c5;border-color:#f3d4c5;color:#fff;box-shadow:none;cursor:not-allowed;opacity:.75}.btn.ghost{background:transparent}.btn.danger{border-color:#ffd1d1;color:var(--red)}.btn.danger:hover{background:#fff5f5;color:#a93b3b}
+main{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;padding:18px 24px 30px;max-width:1480px;margin:auto}
+.section{background:#fff;border:1px solid #edf0f5;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.section h2{margin:0;padding:16px 20px;font-size:15px;letter-spacing:-.02em;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.section h2 small{color:var(--muted);font-size:12px;font-weight:600}
+.section .body{padding:14px 20px 20px}
+.empty{padding:30px;text-align:center;color:var(--muted);background:#fafbfd;border:1px dashed #dfe4ed;border-radius:10px}
+.list{display:grid;gap:12px}
+.page-row{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.page-row:hover{border-color:#ffc2a7}.page-row.active{border-color:var(--o);box-shadow:0 0 0 3px #fff3ed}
+.page-thumb{aspect-ratio:16/9;border-radius:7px;background:#eef1f6;overflow:hidden;display:grid;place-items:center;color:var(--muted);font-size:11px;border:1px solid #e7ebf2}
+.page-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.page-info b{display:block;font-size:14px;margin-bottom:2px}.page-info small{color:var(--muted);font-size:12px}
+.pill{padding:3px 9px;border-radius:99px;font-size:11px;font-weight:800}.pill.ok{background:#e6f6ee;color:var(--green)}.pill.warn{background:#fff4dc;color:var(--amber)}.pill.bad{background:#ffe7e7;color:var(--red)}.pill.idle{background:#f3f5f8;color:#7b879b}
+.page-row .row-tools{display:flex;gap:6px;flex-wrap:wrap}
+.workspace{margin-top:18px;background:#fff;border:1px solid #edf0f5;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.workspace h3{margin:0;padding:14px 20px;font-size:14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.canvas-wrap{padding:18px;background:#fafbfc;display:grid;place-items:center}
+.canvas{width:min(100%,820px);aspect-ratio:16/9;background:#fff;position:relative;border:1px solid var(--line);border-radius:9px;overflow:hidden;box-shadow:0 12px 30px rgba(31,48,79,.10)}
+.canvas img.slide{width:100%;height:100%;object-fit:contain;display:block}
+.overlay{position:absolute;inset:0;pointer-events:auto;cursor:crosshair}
+.layer-hit{position:absolute;border:2px solid rgba(244,91,32,.85);background:rgba(244,91,32,.10);border-radius:3px;cursor:pointer;transition:.15s}
+.layer-hit:hover{background:rgba(244,91,32,.25)}
+.layer-hit.text{border-style:dashed;border-color:rgba(29,158,89,.85);background:rgba(29,158,89,.10)}
+.layer-hit.text:hover{background:rgba(29,158,89,.25)}
+.layer-hit[data-kind="selected"]{border-color:#ffc107;background:rgba(255,193,7,.22);box-shadow:0 0 0 3px rgba(255,193,7,.25)}
+.layer-legend{padding:10px 18px;border-top:1px solid var(--line);background:#fafbfc;display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px;align-items:center}
+.layer-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.layer-legend .lg-fg{background:rgba(244,91,32,.4);border:1px solid var(--o)}
+.layer-legend .lg-text{background:rgba(29,158,89,.4);border:1px dashed var(--green)}
+.feedback-bar{padding:10px 18px;background:#fafbfc;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.feedback-bar select,.feedback-bar input[type=text]{border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:#fff}
+.feedback-bar select{min-width:130px}.feedback-bar input[type=text]{flex:1;min-width:140px}
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kv{padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fafbfd}.kv small{display:block;color:var(--muted);font-size:11px;margin-bottom:3px}.kv b{font-size:14px;color:var(--ink);word-break:break-all}
+.quality-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;margin-top:8px}
+.downloads{display:grid;gap:10px;margin-top:14px}
+.downloads .btn{justify-content:center;padding:13px;font-size:14px}
+.errorbox{padding:12px 14px;border-radius:9px;background:#fff0e7;color:#9a3b15;border:1px solid #ffd1b0;font-size:13px;margin-bottom:12px;white-space:pre-wrap;word-break:break-word}
+.muted{color:var(--muted)}
+.progressbar{margin-top:8px;height:6px;background:#f3f5f8;border-radius:99px;overflow:hidden}.progressbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--o),#ff9a73);width:0%;transition:.4s}
+.dotline{height:1px;background:var(--line);margin:14px 0}
+.toast{position:fixed;left:50%;top:24px;transform:translateX(-50%);background:#17233c;color:#fff;padding:10px 18px;border-radius:99px;z-index:99;box-shadow:0 12px 30px rgba(0,0,0,.18);font-size:13px;opacity:0;transition:.2s}
+.toast.show{opacity:1}
+@media(max-width:980px){main{grid-template-columns:1fr}header{padding:14px 16px}.section h2,.section .body{padding-left:14px;padding-right:14px}.page-row{grid-template-columns:90px 1fr}.page-row .row-tools{grid-column:1/-1}}
+</style></head><body>
+<header>
+  <a class="brand" href="/workbench"><b>图片转可编辑</b><small>工作台 · 每一页可单独打回重生成</small></a>
+  <div class="actions">
+    <span class="badge" id="statusBadge"><i class="dot"></i><span id="statusText">连接中…</span></span>
+    <a class="btn" href="/workbench?view=projects">返回项目列表</a>
+    <a class="btn ghost" href="/workbench?view=convert">新建转换</a>
+  </div>
+</header>
+<main>
+  <div>
+    <section class="section"><h2>页面清单<small id="pageSummary">尚未读取</small></h2>
+      <div class="body">
+        <div id="pageList" class="list"></div>
+        <div id="pageEmpty" class="empty" hidden>暂无可编辑页面。任务完成后这里会出现每一页的缩略图和操作入口。</div>
+      </div>
+    </section>
+    <section class="workspace" id="workspace" hidden>
+      <h3>第 <span id="activePageIndex">—</span> 页 · 可编辑图层<span class="muted" id="activePageMeta"></span></h3>
+      <div class="canvas-wrap"><div class="canvas" id="canvas"><img class="slide" id="slideImg" alt="可编辑图层预览"><div class="overlay" id="overlay"></div></div></div>
+      <div class="layer-legend"><i class="lg-fg"></i>前景元素 / <i class="lg-text"></i>可编辑文本框 / <span class="muted">点击方框查看说明，按住鼠标拖动可圈选异常区域</span></div>
+      <div class="feedback-bar">
+        <span class="muted">异常类别</span>
+        <select id="feedbackKind"><option value="incorrect_object">元素位置/内容错误</option><option value="missing_object">元素缺失</option><option value="background_drift">背景漂移</option><option value="edge_artifact">白边或毛边</option><option value="text_error">文本错误</option></select>
+        <input type="text" id="feedbackNote" placeholder="补充说明，例如「把图标移到右上角」" maxlength="200">
+        <button class="btn danger" id="saveFeedback">保存圈选</button>
+        <button class="btn" id="clearFeedback">清除圈选</button>
+        <button class="btn" id="redoPage">整页重生成</button>
+      </div>
+    </section>
+  </div>
+  <aside>
+    <section class="section"><h2>任务状态<small id="jobIdText">—</small></h2>
+      <div class="body">
+        <div class="status-grid">
+          <div class="kv"><small>当前状态</small><b id="jobStatus">读取中…</b></div>
+          <div class="kv"><small>当前步骤</small><b id="jobStep">—</b></div>
+        </div>
+        <div class="progressbar"><i id="jobProgressBar"></i></div>
+        <small class="muted" id="jobProgressText" style="display:block;margin-top:6px">0%</small>
+        <div id="jobError" class="errorbox" hidden></div>
+        <div class="dotline"></div>
+        <small class="muted">源文件</small>
+        <ul id="sourceFiles" style="margin:8px 0 0;padding:0;list-style:none;display:grid;gap:6px"></ul>
+      </div>
+    </section>
+    <section class="section"><h2>下载与交付<small id="downloadHint">任务完成后开放</small></h2>
+      <div class="body">
+        <div id="downloads" class="downloads">
+          <button class="btn primary" id="dlEditable" disabled>下载可编辑 PPTX</button>
+          <button class="btn" id="dlImage" disabled>下载图片版 PPTX</button>
+          <button class="btn" id="dlZip" disabled>下载整包 ZIP</button>
+          <a class="btn ghost" id="openEditor" href="#" style="justify-content:center;text-decoration:none">进入在线编辑（轻量标注）</a>
+        </div>
+        <p class="muted" style="font-size:12px;margin:14px 0 0">可编辑 PPTX 中的文本框和图片均为原生对象，可在 PowerPoint / Keynote / WPS 中直接编辑。</p>
+      </div>
+    </section>
+    <section class="section"><h2>质量核对<small id="qualitySummary">—</small></h2>
+      <div class="body">
+        <div id="qualityList"></div>
+      </div>
+    </section>
+  </aside>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+(function(){var _local=location.protocol==='file:'||/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(location.host);if(_local)return;try{var x=new XMLHttpRequest;x.open('GET','http://127.0.0.1:5001/api/health',false);x.timeout=500;x.send(null);if(x.status>=200&&x.status<300){try{var o=JSON.parse(x.responseText);if(o&&o.ok){location.replace('http://127.0.0.1:5001/image-to-editable'+location.search+location.hash)}}catch(_){}}}catch(_){}})();
+if(location.protocol==='file:')location.replace(`http://127.0.0.1:5001/image-to-editable${location.search||''}`);
+const $=id=>document.getElementById(id),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const params=new URLSearchParams(location.search);
+const job=params.get('job')||'';
+let pollToken=0,taskState=null,editablePages=[],activePageIndex=0,layerManifest=null,drawingBox=null;
+const statusLabel={queued:'排队中',outlining:'生成大纲中',generating_slides:'生成 PPT 图片中',awaiting_review:'等待大纲确认',awaiting_slide_review:'等待图片确认',awaiting_background_review:'等待背景确认',converting_pptx:'可编辑转化中',done:'已完成',failed:'失败',cancelled:'已取消'};
+function statusKind(s){return({done:'ok',failed:'bad',cancelled:'bad',converting_pptx:'warn',awaiting_slide_review:'warn'}[s])||'run'}
+function setStatus(text,kind){$('statusText').textContent=text;$('statusBadge').className='badge '+(kind||'run');const d=$('statusBadge').firstElementChild;d.className='dot '+(kind==='ok'?'ok':kind==='run'?'run':'')}
+let toastTimer=0;function toast(text){const t=$('toast');t.textContent=text;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2400)}
+async function api(path,opts={}){const r=await fetch(path,{cache:'no-store',...opts});const text=await r.text();let d;try{d=text?JSON.parse(text):{}}catch{throw new Error(`服务返回异常（${r.status}）：${text.slice(0,120)}`)}if(!r.ok)throw new Error(d.detail||d.error||`请求失败（${r.status}）`);return d}
+if(!job){setStatus('缺少任务 ID','bad');$('jobIdText').textContent='—';$('jobStatus').textContent='请从项目列表进入'}else{$('jobIdText').textContent=job.length>16?job.slice(0,16)+'…':job;boot()}
+async function boot(){await loadJob();await loadEditablePages();await loadQuality();pollJob()}
+async function loadJob(){try{const d=await api(`/api/ppt/jobs/${job}`);taskState=d;renderJob(d);renderSourceFiles(d);const ed=d.editable_conversion||{};renderDownloads(d.status,ed);$('downloadHint').textContent=d.status==='done'?'任务已完成，可下载或在线编辑':'任务完成后开放'}catch(e){setStatus('任务读取失败','bad');$('jobStatus').textContent=e.message}}
+function renderJob(d){const status=d.status,step=d.current_step||'—',progress=Math.max(0,Math.min(100,+(d.progress||0)));$('jobStatus').textContent=statusLabel[status]||status;$('jobStep').textContent=step;$('jobProgressBar').style.width=progress+'%';$('jobProgressText').textContent=progress+'%';setStatus(statusLabel[status]||status,statusKind(status));if(d.error&&(status==='failed'||status==='cancelled')){$('jobError').hidden=false;$('jobError').textContent=d.error}else $('jobError').hidden=true}
+function renderSourceFiles(d){const files=d.input_files||[],slides=d.source_slide_images||[];const ul=$('sourceFiles');ul.innerHTML='';const all=[...new Set([...files,...slides])];if(!all.length){ul.innerHTML='<li class="muted" style="font-size:12px">无源文件记录</li>';return}for(const path of all){const name=String(path).split(/[\\\/]/).pop();const li=document.createElement('li');li.style.cssText='display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fafbfd;font-size:12px';const ext=(name.split('.').pop()||'').toLowerCase();const isImg=['png','jpg','jpeg','webp','bmp'].includes(ext);const kindMap={pdf:['pdf','#e35d5d','PDF'],pptx:['pptx','#ef8c3a','PPT'],ppt:['ppt','#ef8c3a','PPT'],doc:['doc','#4d7ab5','DOC'],docx:['doc','#4d7ab5','DOC'],xls:['xls','#3fa46a','XLS'],xlsx:['xls','#3fa46a','XLS']};const info=kindMap[ext]||['img',isImg?'#e6f0ff':'#67718a',isImg?'IMG':ext.toUpperCase().slice(0,3)];li.innerHTML=`<span style="width:24px;height:24px;border-radius:5px;display:grid;place-items:center;background:${info[1]};color:#fff;font-size:9px;font-weight:900">${info[2]}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(name)}">${esc(name)}</span>`;ul.append(li)}}
+function renderDownloads(status,ed){const editableDone=status==='done'&&ed.status==='done';const imageReady=['awaiting_slide_review','converting_pptx','done'].includes(status);$('dlEditable').disabled=!editableDone;$('dlImage').disabled=!imageReady;$('dlZip').disabled=!editableDone;$('openEditor').href=editableDone?`/ppt-editor?job=${encodeURIComponent(job)}`:'#';$('openEditor').style.opacity=editableDone?1:.5;$('openEditor').style.pointerEvents=editableDone?'auto':'none';$('dlEditable').onclick=()=>editableDone&&trigger(`/api/ppt/jobs/${job}/download/editable-pptx`);$('dlImage').onclick=()=>imageReady&&trigger(`/api/ppt/jobs/${job}/download/image-pptx`);$('dlZip').onclick=()=>editableDone&&trigger(`/api/ppt/jobs/${job}/download`)}
+function trigger(url){const a=document.createElement('a');a.href=url;a.rel='noopener';document.body.append(a);a.click();a.remove()}
+async function loadEditablePages(){try{const d=await api(`/api/ppt/jobs/${job}/editable-pages`);editablePages=d.pages||[]}catch(e){editablePages=[]}renderPageList();if(editablePages.length&&!activePageIndex)selectPage(editablePages[0].page_index)}
+function renderPageList(){const list=$('pageList'),empty=$('pageEmpty');if(!editablePages.length){list.innerHTML='';empty.hidden=false;return}empty.hidden=true;list.innerHTML=editablePages.map(p=>{const isActive=+p.page_index===+activePageIndex;return `<article class="page-row ${isActive?'active':''}" data-page="${p.page_index}"><div class="page-thumb"><img src="/api/ppt/jobs/${job}/slides/${p.page_index}/source?ts=${Date.now()}" alt="第 ${p.page_index} 页" onerror="this.parentElement.textContent='第 ${p.page_index} 页'"></div><div class="page-info"><b>第 ${p.page_index} 页</b><small>独立 PPTX 已就绪 · ${esc(p.layers_url)}</small></div><div class="row-tools"><span class="pill ok">可下载</span><button class="btn" data-action="download" data-page="${p.page_index}">下载该页</button><button class="btn danger" data-action="redo" data-page="${p.page_index}">打回重生成</button></div></article>`}).join('');list.querySelectorAll('.page-row').forEach(row=>row.onclick=e=>{if(e.target.closest('button'))return;selectPage(+row.dataset.page)});list.querySelectorAll('[data-action="download"]').forEach(b=>b.onclick=e=>{e.stopPropagation();trigger(`/api/ppt/jobs/${job}/editable-pages/${b.dataset.page}/download`)});list.querySelectorAll('[data-action="redo"]').forEach(b=>b.onclick=e=>{e.stopPropagation();redoPage(+b.dataset.page)});$('pageSummary').textContent='共 '+editablePages.length+' 页'}
+async function selectPage(pageIndex){activePageIndex=pageIndex;document.querySelectorAll('.page-row').forEach(r=>r.classList.toggle('active',+r.dataset.page===+pageIndex));$('activePageIndex').textContent=pageIndex;$('workspace').hidden=false;$('slideImg').src=`/api/ppt/jobs/${job}/slides/${pageIndex}/source?ts=${Date.now()}`;$('overlay').innerHTML='<div class="muted" style="position:absolute;inset:0;display:grid;place-items:center">正在读取图层…</div>';$('activePageMeta').textContent='正在读取图层';try{layerManifest=await api(`/api/ppt/jobs/${job}/editable-pages/${pageIndex}/layers`);renderOverlay(layerManifest);const fg=(layerManifest.layers?.foreground?.elements||[]).length;const tx=(layerManifest.layers?.text?.boxes||[]).length;$('activePageMeta').textContent=fg+' 个前景元素 · '+tx+' 个文本框'}catch(e){$('overlay').innerHTML='';$('activePageMeta').textContent='图层暂不可用'}}
+function renderOverlay(manifest){const overlay=$('overlay');overlay.innerHTML='';drawingBox=null;const W=manifest.canvas?.[0]||16,H=manifest.canvas?.[1]||9;const fg=manifest.layers?.foreground?.elements||[];const tx=(manifest.layers?.text?.boxes||[]).map((b,i)=>({id:'text_'+(i+1),label:b.text||'文本',bbox:b.bbox,kind:'text'}));for(const el of [...fg,...tx]){const [x,y,w,h]=el.bbox||[];if(!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(w)||!Number.isFinite(h))continue;if(x<0||y<0||x+w>W+0.01||y+h>H+0.01)continue;const hit=document.createElement('button');hit.type='button';hit.className='layer-hit '+(el.kind==='text'||String(el.id).startsWith('text_')?'text':'');hit.style.cssText='left:'+(x/W*100)+'%;top:'+(y/H*100)+'%;width:'+(w/W*100)+'%;height:'+(h/H*100)+'%';hit.title=(el.label||el.id)+'（可编辑元素）';hit.onclick=ev=>{ev.stopPropagation();document.querySelectorAll('.layer-hit').forEach(h=>h.removeAttribute('data-kind'));hit.dataset.kind='selected';toast('已选中：'+(el.label||el.id))};overlay.append(hit)}if(!overlay.children.length)overlay.innerHTML='<div class="muted" style="position:absolute;inset:0;display:grid;place-items:center">本帧未返回可编辑图层</div>'}
+$('overlay').addEventListener('pointerdown',e=>{if(e.target!==$('overlay')&&!e.target.classList.contains('layer-hit'))return;const overlay=$('overlay'),rect=overlay.getBoundingClientRect();const start={x:e.clientX-rect.left,y:e.clientY-rect.top};let box=document.createElement('div');box.className='layer-hit';box.style.cssText='left:'+start.x+'px;top:'+start.y+'px;width:0;height:0';overlay.append(box);document.querySelectorAll('.layer-hit[data-kind="selected"]').forEach(h=>h.removeAttribute('data-kind'));function move(ev){const cur={x:ev.clientX-rect.left,y:ev.clientY-rect.top};const x=Math.min(start.x,cur.x),y=Math.min(start.y,cur.y),w=Math.abs(cur.x-start.x),h=Math.abs(cur.y-start.y);box.style.left=x+'px';box.style.top=y+'px';box.style.width=w+'px';box.style.height=h+'px';drawingBox={x,y,w,h,absolute:false}}function end(){overlay.removeEventListener('pointermove',move);overlay.removeEventListener('pointerup',end);if(drawingBox&&drawingBox.w>6&&drawingBox.h>6){box.dataset.kind='selected';drawingBox.absolute=true}else{box.remove();drawingBox=null}}overlay.addEventListener('pointermove',move);overlay.addEventListener('pointerup',end)});
+$('saveFeedback').onclick=async()=>{const kind=$('feedbackKind').value,note=$('feedbackNote').value.trim();const boxes=[];const sel=document.querySelector('.layer-hit[data-kind="selected"]');if(sel){const overlay=$('overlay').getBoundingClientRect();const r=sel.getBoundingClientRect();const x=((r.left-overlay.left)/overlay.width*16).toFixed(4);const y=((r.top-overlay.top)/overlay.height*9).toFixed(4);const w=(r.width/overlay.width*16).toFixed(4);const h=(r.height/overlay.height*9).toFixed(4);boxes.push({bbox:[+x,+y,+w,+h],kind,note})}else if(drawingBox&&drawingBox.absolute){const overlay=$('overlay').getBoundingClientRect();const x=(drawingBox.x/overlay.width*16).toFixed(4);const y=(drawingBox.y/overlay.height*9).toFixed(4);const w=(drawingBox.w/overlay.width*16).toFixed(4);const h=(drawingBox.h/overlay.height*9).toFixed(4);if(+w>0.1&&+h>0.1)boxes.push({bbox:[+x,+y,+w,+h],kind,note})}else{toast('请先点击图层或拖动圈选一个区域');return}try{await api(`/api/ppt/jobs/${job}/editable-feedback`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({page_index:activePageIndex,boxes})});toast('已保存 '+boxes.length+' 个圈选，可在「整页重生成」时使用');$('feedbackNote').value=''}catch(e){toast(e.message)}};
+$('clearFeedback').onclick=()=>{document.querySelectorAll('.layer-hit[data-kind="selected"]').forEach(h=>h.removeAttribute('data-kind'));drawingBox=null;const ov=$('overlay');[...ov.querySelectorAll('div.layer-hit')].forEach(d=>d.remove());toast('已清除圈选')};
+$('redoPage').onclick=()=>redoPage(activePageIndex);
+async function redoPage(pageIndex){if(!confirm('确认打回第 '+pageIndex+' 页重新生成吗？此操作会消耗该页的 ChatGPT 重生成配额。'))return;try{await api(`/api/ppt/jobs/${job}/convert-editable`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({repair_pages:[pageIndex],strict_validation:true})});toast('第 '+pageIndex+' 页正在重新生成，工作台会实时更新进度');pollJob()}catch(e){toast(e.message)}}
+async function loadQuality(){try{const d=await api(`/api/ppt/jobs/${job}/editable-quality`);const pages=d.pages||[];if(!pages.length){$('qualityList').innerHTML='<div class="empty" style="padding:14px">尚无质量报告</div>';$('qualitySummary').textContent='—';return}$('qualitySummary').textContent=pages.length+' 页';$('qualityList').innerHTML=pages.map(p=>{const ssim=p.ssim?Number(p.ssim).toFixed(3):'—';const cls=p.passed===false?'warn':p.passed?'ok':'idle';const label=p.passed===false?'需要复核':p.passed?'通过':'未核对';return '<div class="quality-row"><span>第 '+p.page_index+' 页 · SSIM '+ssim+'</span><span class="pill '+cls+'">'+label+'</span></div>'}).join('')}catch(e){$('qualityList').innerHTML='<div class="empty" style="padding:14px">质量报告暂不可用</div>'}}
+async function pollJob(){const token=++pollToken;while(token===pollToken){try{const d=await api(`/api/ppt/jobs/${job}`);if(token!==pollToken)return;taskState=d;renderJob(d);const ed=d.editable_conversion||{};renderDownloads(d.status,ed);if(d.status==='failed'||d.status==='cancelled'){$('jobError').hidden=false;$('jobError').textContent=d.error||'任务失败'}else{$('jobError').hidden=true}if(ed.page_previews){const ids=ed.page_previews.map(p=>p.page_index);const have=new Set(editablePages.map(p=>p.page_index));if(ids.some(i=>!have.has(i)))await loadEditablePages()}if(d.status==='done'&&ed.status==='done'){await loadEditablePages();await loadQuality();return}}catch(e){}await sleep(2000)}}
+</script>
+</body></html>

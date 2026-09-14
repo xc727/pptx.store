@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PPT 前景抠图实验室</title>
+  <link rel="icon" href="/favicon.ico?v=20260914" sizes="any">
+  <link rel="icon" type="image/png" href="/logo.png?v=20260914">
+  <link rel="apple-touch-icon" href="/logo.png?v=20260914">
+  <style>
+    :root {
+      --bg: #0b1020; --panel: #121a2c; --panel2: #182238; --line: #2b3855;
+      --text: #f3f6fb; --muted: #9eabc3; --cyan: #38d9c5; --blue: #5b8cff;
+      --pink: #fa6da8; --warn: #ffcc66; --good: #45d483; --bad: #ff6b6b;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: radial-gradient(circle at 15% -20%, #1a3155 0, var(--bg) 35%); font-family: "Microsoft YaHei", "Segoe UI", sans-serif; }
+    button, input, select, textarea { font: inherit; }
+    header { height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--line); background: rgba(10,15,28,.88); backdrop-filter: blur(14px); position: sticky; top: 0; z-index: 9; }
+    header h1 { font-size: 20px; margin: 0; letter-spacing: .04em; }
+    header .sub { color: var(--muted); font-size: 12px; }
+    main { display: grid; grid-template-columns: 330px minmax(430px, 1fr) minmax(350px, .9fr); gap: 14px; padding: 14px; min-height: calc(100vh - 68px); }
+    .panel { background: linear-gradient(180deg, rgba(24,34,56,.96), rgba(15,23,40,.96)); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,.2); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+    .panel-head h2 { font-size: 15px; margin: 0; }
+    .body { padding: 14px; }
+    .scroll { max-height: calc(100vh - 125px); overflow: auto; }
+    label { display: block; color: #dbe3f2; font-size: 12px; font-weight: 700; margin: 13px 0 7px; }
+    select, input[type="text"], textarea { width: 100%; color: var(--text); background: #0d1526; border: 1px solid var(--line); border-radius: 9px; padding: 9px 10px; outline: none; }
+    textarea { min-height: 68px; resize: vertical; }
+    input[type="file"] { width: 100%; color: var(--muted); font-size: 12px; }
+    input[type="range"] { width: 100%; accent-color: var(--cyan); }
+    .range-row { display: grid; grid-template-columns: 1fr 52px; gap: 8px; align-items: center; }
+    .value { text-align: right; color: var(--cyan); font: 12px Consolas, monospace; }
+    .presets { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+    .preset, .ghost { border: 1px solid var(--line); color: var(--muted); background: #111a2d; border-radius: 9px; padding: 8px; cursor: pointer; }
+    .preset:hover, .preset.active { color: #fff; border-color: var(--cyan); background: rgba(56,217,197,.12); }
+    .primary { width: 100%; margin-top: 14px; border: 0; border-radius: 10px; padding: 12px 14px; font-weight: 800; color: #06121a; background: linear-gradient(120deg, var(--cyan), #75e6ff); cursor: pointer; }
+    .primary:disabled { filter: grayscale(1); opacity: .55; cursor: wait; }
+    .hint { color: var(--muted); font-size: 11px; line-height: 1.6; margin-top: 7px; }
+    .canvas-wrap { position: relative; margin: 14px; min-height: 420px; height: calc(100vh - 170px); display: grid; place-items: center; overflow: hidden; border-radius: 11px; border: 1px solid var(--line); background-color: #e8ebf0; background-image: linear-gradient(45deg,#cbd0da 25%,transparent 25%),linear-gradient(-45deg,#cbd0da 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#cbd0da 75%),linear-gradient(-45deg,transparent 75%,#cbd0da 75%); background-size: 24px 24px; background-position: 0 0,0 12px,12px -12px,-12px 0; }
+    #sourceCanvas { max-width: 100%; max-height: 100%; cursor: crosshair; box-shadow: 0 10px 35px rgba(0,0,0,.24); }
+    .empty { color: #26344e; text-align: center; line-height: 1.8; }
+    .toolbar { display: flex; gap: 8px; align-items: center; }
+    .toolbar button { padding: 6px 9px; font-size: 11px; }
+    .badge { border: 1px solid var(--line); padding: 4px 8px; border-radius: 99px; color: var(--muted); font-size: 11px; }
+    .tabs { display: flex; gap: 6px; padding: 10px 12px 0; }
+    .tab { flex: 1; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 8px; padding: 7px; cursor: pointer; }
+    .tab.active { color: #fff; border-color: var(--blue); background: rgba(91,140,255,.14); }
+    .result-stage { min-height: 340px; margin: 12px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; background: #0a1020; }
+    .result-stage img { max-width: 100%; max-height: 52vh; object-fit: contain; }
+    .status { margin: 0 12px 12px; min-height: 42px; padding: 10px; border-radius: 9px; background: #0d1526; color: var(--muted); font-size: 12px; white-space: pre-wrap; line-height: 1.6; }
+    .downloads { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; padding: 0 12px 12px; }
+    .downloads a { text-align: center; text-decoration: none; color: #eaf0ff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 11px; }
+    details { border-top: 1px solid var(--line); padding: 12px; }
+    summary { cursor: pointer; color: #dce5f5; font-size: 13px; font-weight: 800; }
+    .feedback-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .pass { background: rgba(69,212,131,.14); color: var(--good); border: 1px solid rgba(69,212,131,.5); }
+    .fail { background: rgba(255,107,107,.12); color: var(--bad); border: 1px solid rgba(255,107,107,.5); }
+    .action { border-radius: 9px; padding: 9px; cursor: pointer; }
+    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-top: 10px; }
+    .stat { padding: 8px 4px; text-align: center; border-radius: 8px; background: #0d1526; }
+    .stat b { display: block; color: var(--cyan); font-size: 17px; }
+    .stat span { color: var(--muted); font-size: 9px; }
+    @media(max-width: 1180px) { main { grid-template-columns: 300px 1fr; } .result-panel { grid-column: 1 / -1; } .scroll { max-height: none; } }
+    @media(max-width: 760px) { main { grid-template-columns: 1fr; } .result-panel { grid-column: auto; } .canvas-wrap { height: 55vh; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>PPT 前景抠图实验室</h1><div class="sub">ISNet · BiRefNet · 多模型集成 · 可积累训练数据</div></div>
+    <div class="badge" id="modelStatus">正在读取模型…</div>
+  </header>
+  <main>
+    <section class="panel"><div class="panel-head"><h2>01 参数与精度</h2></div><div class="body scroll">
+      <label>输入图片</label><input id="file" type="file" accept="image/png,image/jpeg,image/webp">
+      <label>精度预设</label><div class="presets" id="presets"></div>
+      <label>模型</label><select id="model"></select>
+      <label>背景判断</label><select id="background_mode"><option value="force">强制自动识别纯色幕布</option><option value="auto">仅高置信度时启用</option><option value="off">关闭背景模型</option></select>
+      <label>背景否决强度</label><div class="range-row"><input id="background_rejection" type="range" min="0" max="1" step="0.01"><span class="value"></span></div>
+      <label>元素完整性补全</label><div class="range-row"><input id="completeness" type="range" min="0" max="1" step="0.01"><span class="value"></span></div>
+      <label>Alpha 对比度</label><div class="range-row"><input id="alpha_contrast" type="range" min="0.25" max="3" step="0.01"><span class="value"></span></div>
+      <label>Alpha 偏移</label><div class="range-row"><input id="alpha_bias" type="range" min="-0.5" max="0.5" step="0.005"><span class="value"></span></div>
+      <label>边缘柔化</label><div class="range-row"><input id="edge_feather" type="range" min="0" max="6" step="0.05"><span class="value"></span></div>
+      <label>幕布颜色反混合</label><div class="range-row"><input id="despill_strength" type="range" min="0" max="1" step="0.01"><span class="value"></span></div>
+      <label>推理最大边长</label><select id="max_side"><option>2048</option><option>3072</option><option selected>4096</option><option>6144</option><option>8192</option></select>
+      <div class="hint">高级模型首次使用会下载权重。PPT 多元素模式优先完整性，运行速度最慢。</div>
+      <button class="primary" id="run">开始高精度抠图</button>
+    </div></section>
+
+    <section class="panel"><div class="panel-head"><h2>02 原图与补漏框</h2><div class="toolbar"><span class="badge" id="boxCount">0 个框</span><button class="ghost" id="undoBox">撤销</button><button class="ghost" id="clearBoxes">清空</button></div></div>
+      <div class="canvas-wrap" id="canvasWrap"><div class="empty" id="empty">上传图片后显示在这里<br>拖动鼠标框选 ISNet 容易漏掉的圆点、细线、卡片或图标</div><canvas id="sourceCanvas" hidden></canvas></div>
+    </section>
+
+    <section class="panel result-panel"><div class="panel-head"><h2>03 结果与训练反馈</h2><span class="badge" id="elapsed">未运行</span></div>
+      <div class="tabs"><button class="tab active" data-view="checker">透明</button><button class="tab" data-view="white">白底</button><button class="tab" data-view="dark">深底</button><button class="tab" data-view="alpha">Alpha</button></div>
+      <div class="result-stage"><div class="empty" id="resultEmpty">结果将在这里显示</div><img id="resultImage" hidden></div>
+      <div class="status" id="status">等待上传图片。</div>
+      <div class="downloads" id="downloads"></div>
+      <details open><summary>把本次结果加入学习数据</summary>
+        <label>场景标签</label><input id="sceneTag" type="text" value="PPT纯色幕布多元素" placeholder="人物 / 产品 / PPT图标 / 半透明玻璃">
+        <label>人工修正后的 Alpha（可选）</label><input id="correctedAlpha" type="file" accept="image/png,image/jpeg">
+        <label>备注</label><textarea id="notes" placeholder="记录漏了什么、哪组参数更好"></textarea>
+        <div class="feedback-actions"><button class="action pass" id="accept">通过并加入数据</button><button class="action fail" id="reject">不通过并加入数据</button></div>
+      </details>
+      <details><summary>训练数据仓库</summary>
+        <div class="stats"><div class="stat"><b id="stTotal">0</b><span>总样本</span></div><div class="stat"><b id="stPass">0</b><span>通过</span></div><div class="stat"><b id="stFix">0</b><span>标准Alpha</span></div><div class="stat"><b id="stReady">0</b><span>可训练</span></div></div>
+        <label>直接导入原图＋标准 Alpha</label><input id="trainSource" type="file" accept="image/*"><input id="trainAlpha" type="file" accept="image/*" style="margin-top:7px">
+        <div class="feedback-actions"><button class="action ghost" id="importPair">导入训练对</button><button class="action ghost" id="recommend">使用历史推荐参数</button></div>
+        <button class="primary" id="exportDataset">导出训练集 ZIP</button>
+      </details>
+    </section>
+  </main>
+<script>
+  (function(){var _local=location.protocol==='file:'||/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(location.host);if(_local)return;try{var x=new XMLHttpRequest;x.open('GET','http://127.0.0.1:5001/api/health',false);x.timeout=500;x.send(null);if(x.status>=200&&x.status<300){try{var o=JSON.parse(x.responseText);if(o&&o.ok){location.replace('http://127.0.0.1:5001/matting-lab'+location.search+location.hash)}}catch(_){}}}catch(_){}})();
+  const $ = id => document.getElementById(id);
+  const presetValues = {
+    fast:{model:'isnet',background_mode:'auto',background_rejection:.45,completeness:0,alpha_contrast:1.05,alpha_bias:0,edge_feather:.25,despill_strength:.35,max_side:2560},
+    balanced:{model:'auto',background_mode:'auto',background_rejection:.7,completeness:.35,alpha_contrast:1.1,alpha_bias:0,edge_feather:.4,despill_strength:.55,max_side:3072},
+    'high-quality':{model:'birefnet-general',background_mode:'auto',background_rejection:.78,completeness:.55,alpha_contrast:1.15,alpha_bias:0,edge_feather:.5,despill_strength:.7,max_side:4096},
+    'ppt-elements':{model:'ensemble-max',background_mode:'force',background_rejection:1,completeness:.92,alpha_contrast:1.18,alpha_bias:-.015,edge_feather:.45,despill_strength:.8,max_side:4096},
+    'soft-alpha':{model:'birefnet-general',background_mode:'auto',background_rejection:.45,completeness:.15,alpha_contrast:.9,alpha_bias:0,edge_feather:1.1,despill_strength:.4,max_side:4096}
+  };
+  let currentPreset='ppt-elements', currentResult=null, currentView='checker', boxes=[], drawing=null, sourceImage=null;
+  const canvas=$('sourceCanvas'), ctx=canvas.getContext('2d');
+  const rangeIds=['background_rejection','completeness','alpha_contrast','alpha_bias','edge_feather','despill_strength'];
+  function applyPreset(id){ currentPreset=id; const p=presetValues[id]; Object.entries(p).forEach(([k,v])=>{ if($(k)) $(k).value=v; }); document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',b.dataset.id===id)); updateValues(); }
+  function updateValues(){ rangeIds.forEach(id=>$(id).nextElementSibling.textContent=Number($(id).value).toFixed(id==='alpha_bias'?3:2)); }
+  async function init(){
+    const data=await fetch('/api/matting/models').then(r=>r.json());
+    $('model').innerHTML=data.models.map(m=>`<option value="${m.id}">${m.name}${m.installed?'':'（首次下载）'}</option>`).join('');
+    $('modelStatus').textContent=`${data.models.filter(x=>x.installed).length}/${data.models.length} 个模型已就绪`;
+    $('presets').innerHTML=data.presets.map(p=>`<button class="preset" data-id="${p.id}">${p.name}</button>`).join('');
+    document.querySelectorAll('.preset').forEach(b=>b.onclick=()=>applyPreset(b.dataset.id)); applyPreset(currentPreset); loadStats();
+  }
+  rangeIds.forEach(id=>$(id).oninput=updateValues);
+  $('file').onchange=()=>{ const f=$('file').files[0]; if(!f)return; sourceImage=new Image(); sourceImage.onload=()=>{ boxes=[]; fitCanvas(); $('empty').hidden=true; canvas.hidden=false; drawCanvas(); }; sourceImage.src=URL.createObjectURL(f); };
+  function fitCanvas(){ const wrap=$('canvasWrap'), r=sourceImage.width/sourceImage.height, maxW=wrap.clientWidth-20,maxH=wrap.clientHeight-20; let w=maxW,h=w/r;if(h>maxH){h=maxH;w=h*r;} canvas.width=Math.max(1,Math.round(w));canvas.height=Math.max(1,Math.round(h)); }
+  function drawCanvas(){ if(!sourceImage)return;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(sourceImage,0,0,canvas.width,canvas.height);ctx.lineWidth=2;ctx.font='12px Microsoft YaHei'; boxes.forEach((b,i)=>{ctx.strokeStyle='#ff477e';ctx.fillStyle='rgba(255,71,126,.12)';ctx.fillRect(b.x*canvas.width,b.y*canvas.height,b.w*canvas.width,b.h*canvas.height);ctx.strokeRect(b.x*canvas.width,b.y*canvas.height,b.w*canvas.width,b.h*canvas.height);ctx.fillStyle='#ff477e';ctx.fillText(`补漏 ${i+1}`,b.x*canvas.width+4,b.y*canvas.height+14);});if(drawing){ctx.strokeStyle='#38d9c5';ctx.strokeRect(drawing.x,drawing.y,drawing.w,drawing.h);} $('boxCount').textContent=`${boxes.length} 个框`; }
+  function point(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};}
+  canvas.onpointerdown=e=>{canvas.setPointerCapture(e.pointerId);const p=point(e);drawing={x:p.x,y:p.y,w:0,h:0};};
+  canvas.onpointermove=e=>{if(!drawing)return;const p=point(e);drawing.w=p.x-drawing.x;drawing.h=p.y-drawing.y;drawCanvas();};
+  canvas.onpointerup=()=>{if(!drawing)return;let{x,y,w,h}=drawing;if(w<0){x+=w;w=-w}if(h<0){y+=h;h=-h}if(w>4&&h>4)boxes.push({x:x/canvas.width,y:y/canvas.height,w:w/canvas.width,h:h/canvas.height});drawing=null;drawCanvas();};
+  $('undoBox').onclick=()=>{boxes.pop();drawCanvas()};$('clearBoxes').onclick=()=>{boxes=[];drawCanvas()};window.onresize=()=>{if(sourceImage){fitCanvas();drawCanvas();}};
+  function options(){ return {preset:currentPreset,model:$('model').value,background_mode:$('background_mode').value,max_side:Number($('max_side').value),force_full_resolution:currentPreset!=='fast',...Object.fromEntries(rangeIds.map(id=>[id,Number($(id).value)]))}; }
+  $('run').onclick=async()=>{const file=$('file').files[0];if(!file)return setStatus('请先选择图片。','bad');const fd=new FormData();fd.append('file',file);fd.append('options',JSON.stringify(options()));fd.append('detail_boxes',JSON.stringify(boxes.map(b=>[b.x,b.y,b.w,b.h])));$('run').disabled=true;setStatus('正在加载模型并执行高精度抠图……\n多模型集成首次运行可能需要几分钟。');try{const r=await fetch('/api/matting/process',{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error(d.detail||'处理失败');currentResult=d;$('elapsed').textContent=`${d.elapsed_seconds}s · ${d.model_used}`;showView(currentView);$('downloads').innerHTML=`<a href="${d.urls.rgba}" download>下载 RGBA</a><a href="${d.urls.alpha}" download>下载 Alpha</a><a href="${d.urls.report}" download>下载报告</a>`;setStatus(`完成。背景置信度 ${Number(d.background.confidence*100).toFixed(1)}%\n可见像素 ${d.metrics.visible_pixels.toLocaleString()} · 补漏框 ${d.detail_box_count}`,'good');}catch(e){setStatus(e.message,'bad')}finally{$('run').disabled=false}};
+  function setStatus(t,kind=''){ $('status').textContent=t;$('status').style.color=kind==='bad'?'var(--bad)':kind==='good'?'var(--good)':'var(--muted)'; }
+  function showView(view){currentView=view;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===view));if(!currentResult)return;$('resultEmpty').hidden=true;$('resultImage').hidden=false;$('resultImage').src=currentResult.urls[view];}
+  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+  async function feedback(accepted){if(!currentResult)return setStatus('请先运行一次抠图。','bad');const fd=new FormData();fd.append('result_id',currentResult.result_id);fd.append('accepted',accepted);fd.append('scene_tag',$('sceneTag').value);fd.append('notes',$('notes').value);if($('correctedAlpha').files[0])fd.append('corrected_alpha',$('correctedAlpha').files[0]);const r=await fetch('/api/matting/dataset/feedback',{method:'POST',body:fd});const d=await r.json();if(!r.ok)return setStatus(d.detail||'保存失败','bad');setStatus(accepted?'已加入通过样本。':'已加入失败样本，后续可用于定位弱点。','good');renderStats(d.stats);}
+  $('accept').onclick=()=>feedback(true);$('reject').onclick=()=>feedback(false);
+  async function loadStats(){renderStats(await fetch('/api/matting/dataset/stats').then(r=>r.json()));}
+  function renderStats(s){$('stTotal').textContent=s.total||0;$('stPass').textContent=s.accepted||0;$('stFix').textContent=s.corrected_alpha||0;$('stReady').textContent=s.training_ready||0;}
+  $('importPair').onclick=async()=>{const s=$('trainSource').files[0],a=$('trainAlpha').files[0];if(!s||!a)return setStatus('请选择原图和标准 Alpha。','bad');const fd=new FormData();fd.append('source',s);fd.append('alpha',a);fd.append('scene_tag',$('sceneTag').value);fd.append('notes',$('notes').value);const r=await fetch('/api/matting/dataset/import',{method:'POST',body:fd});const d=await r.json();if(!r.ok)return setStatus(d.detail||'导入失败','bad');renderStats(d.stats);setStatus('标准训练对已导入。','good');};
+  $('recommend').onclick=async()=>{const d=await fetch(`/api/matting/dataset/recommend?scene_tag=${encodeURIComponent($('sceneTag').value)}`).then(r=>r.json());if(!d.sample_count)return setStatus('这个场景还没有通过样本。');Object.entries(d.options).forEach(([k,v])=>{if($(k))$(k).value=v;});updateValues();setStatus(`已根据 ${d.sample_count} 个通过样本载入推荐参数。`,'good');};
+  $('exportDataset').onclick=()=>location.href='/api/matting/dataset/export'; init();
+</script>
+</body></html>

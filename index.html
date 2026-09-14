@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PPTX.STORE | 首页</title>
+    <link rel="icon" href="/favicon.ico?v=20260914" sizes="any">
+    <link rel="icon" type="image/png" href="/logo.png?v=20260914">
+    <link rel="apple-touch-icon" href="/logo.png?v=20260914">
     <!-- GSAP & ScrollTrigger (local fallback-friendly assets for mobile networks) -->
     <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
@@ -101,6 +104,7 @@
         .announcement-time { color:#78907e; font-size:13px; }
         .announcement-content { white-space:pre-wrap; margin:10px 0 0; line-height:1.8; }
         .announcement-empty { color:#78907e; padding:30px 0; text-align:center; }
+        .announcement-history { display:block; margin:18px auto 0; border:1px solid #cbdccb; border-radius:10px; padding:10px 18px; background:#f5faf5; color:var(--primary-green); font:inherit; font-weight:700; cursor:pointer; }
         
         /* 按钮水面波浪效果 (Bottom-to-Top Fill) */
         .btn-wave {
@@ -363,6 +367,7 @@
         <div class="announcement-card">
             <div class="announcement-head"><h2 id="announcements-title">项目公告</h2><button class="announcement-close" id="announcement-close" aria-label="关闭公告">×</button></div>
             <div id="announcement-list" class="announcement-list"><div class="announcement-empty">正在读取公告…</div></div>
+            <button type="button" class="announcement-history" id="announcement-history" hidden>查看历史公告</button>
         </div>
     </dialog>
 
@@ -447,22 +452,33 @@
 
     <!-- === 核心动画脚本 === -->
     <script>
+        (function(){var _local=location.protocol==='file:'||/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(location.host);if(_local)return;try{var x=new XMLHttpRequest;x.open('GET','http://127.0.0.1:5001/api/health',false);x.timeout=500;x.send(null);if(x.status>=200&&x.status<300){try{var o=JSON.parse(x.responseText);if(o&&o.ok){location.replace('http://127.0.0.1:5001/'+location.search+location.hash)}}catch(_){}}}catch(_){}})();
         (() => {
             const dialog = document.getElementById('announcements');
             const list = document.getElementById('announcement-list');
             const close = document.getElementById('announcement-close');
+            const history = document.getElementById('announcement-history');
             const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
             const time = value => new Intl.DateTimeFormat('zh-CN',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
+            let rows = [], showingHistory = false;
+            const renderAnnouncements = () => {
+                const visible = showingHistory ? rows : rows.slice(0, 2);
+                list.innerHTML = visible.length ? visible.map(item => `<article class="announcement-item"><h3>${escape(item.title)}</h3><div class="announcement-time">${time(item.created_at)}</div><p class="announcement-content">${escape(item.content)}</p></article>`).join('') : '<div class="announcement-empty">暂无公告。</div>';
+                history.hidden = rows.length <= 2;
+                history.textContent = showingHistory ? '收起历史公告' : `查看历史公告（${rows.length - 2}）`;
+            };
             const open = async () => {
                 if (!dialog.open) dialog.showModal();
+                showingHistory = false;
                 try {
                     const response = await fetch('/api/announcements');
                     const payload = await response.json();
                     if (!response.ok) throw new Error('读取失败');
-                    const rows = payload.announcements || [];
-                    list.innerHTML = rows.length ? rows.map(item => `<article class="announcement-item"><h3>${escape(item.title)}</h3><div class="announcement-time">${time(item.created_at)}</div><p class="announcement-content">${escape(item.content)}</p></article>`).join('') : '<div class="announcement-empty">暂无公告。</div>';
-                } catch (_) { list.innerHTML = '<div class="announcement-empty">公告暂时无法读取。</div>'; }
+                    rows = payload.announcements || [];
+                    renderAnnouncements();
+                } catch (_) { history.hidden = true; list.innerHTML = '<div class="announcement-empty">公告暂时无法读取。</div>'; }
             };
+            history.addEventListener('click', () => { showingHistory = !showingHistory; renderAnnouncements(); });
             document.addEventListener('click', event => {
                 const link = event.target.closest('a[href="/#announcements"]');
                 if (link) { event.preventDefault(); open(); }
@@ -623,4 +639,3 @@
     </script>
 </body>
 </html>
-

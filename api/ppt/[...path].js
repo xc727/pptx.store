@@ -1,8 +1,15 @@
-const { proxy } = require('../_proxy');
+const { proxy, requestPathParts } = require('../_proxy');
 
+// Keep a top-level catch-all for Vercel deployments.  Some deployments do
+// not route requests reliably to the nested jobs/[...all] function, while
+// the public API still uses /api/ppt/jobs/:jobId/... URLs.
 module.exports = async function handler(req, res) {
-  const rawUrl = req.url || '';
-  const pathname = rawUrl.split('?')[0] || '';
-  const suffix = pathname.replace(/^\/api\/ppt\/?/, '');
-  return proxy(req, res, '/api/ppt/' + suffix);
+  const parts = requestPathParts(req, ['path', '...path'], '/api/ppt');
+  if (!parts.length) {
+    res.statusCode = 404;
+    res.setHeader('content-type', 'application/json; charset=utf-8');
+    res.end(JSON.stringify({ error: 'Missing API path' }));
+    return;
+  }
+  return proxy(req, res, '/api/ppt/' + parts.map((part) => encodeURIComponent(part)).join('/'));
 };
